@@ -144,3 +144,59 @@ h1, h2 {
 .selected-area .card img {
      max-height: 135px;
 }
+/* style.css sonuna eklenecekler */
+.room-controls {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 15px;
+    align-items: center;
+    justify-content: center; /* Ortalamak için */
+    padding: 10px;
+    background-color: #f0f0f0;
+    border-radius: 5px;
+}
+
+.room-controls input[type="text"] {
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    flex-grow: 1; /* Alanı doldursun */
+    max-width: 300px; /* Çok genişlemesin */
+}
+
+.room-controls button {
+    padding: 8px 15px;
+    cursor: pointer;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    transition: background-color 0.2s;
+}
+
+.room-controls button:hover {
+    background-color: #0056b3;
+}
+
+.current-room-display {
+    text-align: center;
+    margin-bottom: 20px;
+    font-weight: bold;
+    color: #555;
+}
+
+/* Kart havuzundaki kartlar için yeni stiller */
+.card.disabled-in-pool {
+    opacity: 0.4;
+    cursor: not-allowed;
+    border-color: #ff7675; /* Başkası tarafından seçilenin kenarlığı */
+}
+
+.card.disabled-in-pool:hover {
+    transform: none; /* Büyümesin */
+}
+
+.card.selected-by-me {
+    border-color: #55efc4; /* Benim tarafımdan seçilenin kenarlığı */
+    /* opacity: 0.7; İsteğe bağlı: hafif transparan */
+}
