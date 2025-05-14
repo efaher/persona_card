@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Terapötik Kart Seçici</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <h1>Terapötik Kart Seçici</h1>
+
+    <div class="controls">
+        <p id="info-text">Lütfen en fazla 10 kart seçin. Seçilen Kartlar: <span id="selected-count">0</span>/10</p>
+        <button id="reset-button">Seçimi Sıfırla</button>
+    </div>
+
+    <h2>Kart Havuzu (Seçmek için tıklayın)</h2>
+    <div id="card-pool" class="card-container">
+        <!-- Kartlar buraya JavaScript ile eklenecek -->
+    </div>
+
+    <h2>Seçilen Kartlar</h2>
+    <div id="selected-cards" class="card-container selected-area">
+        <!-- Seçilen kartlar buraya JavaScript ile eklenecek -->
+        <p id="no-selected-text">Henüz kart seçilmedi.</p>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
