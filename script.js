@@ -41,10 +41,10 @@ document.addEventListener('DOMContentLoaded', () => {
     // Şimdilik: Giriş alanı pasif (placeholder), kart seti seçimi görünür, oda kontrolleri ve kart alanları gizli
     userAuthControls.style.display = 'block'; // Placeholder'ı göster
     cardSetSelectionArea.style.display = 'block'; // Kart seti seçimini göster
-    roomControlsArea.style.display = 'none'; // Oda kontrollerini gizle
-    document.querySelector('.controls').style.display = 'none'; // Reset butonu ve bilgi metnini gizle
-    cardPool.style.display = 'none'; // Kart havuzunu gizle
-    selectedCardsContainer.parentElement.style.display = 'none'; // Seçilen kartlar başlığını ve alanı gizle
+    //roomControlsArea.style.display = 'none'; // Oda kontrollerini gizle
+    //document.querySelector('.controls').style.display = 'none'; // Reset butonu ve bilgi metnini gizle
+    //cardPool.style.display = 'none'; // Kart havuzunu gizle
+    //selectedCardsContainer.parentElement.style.display = 'none'; // Seçilen kartlar başlığını ve alanı gizle
 
 
     // --- Socket.IO Bağlantı Olayları ---
