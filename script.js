@@ -1,5 +1,4 @@
-
-// --- START OF FILE script.js (Düzeltilmiş Versiyon) ---
+// --- START OF FILE script.js (Nihai Düzeltilmiş Versiyon) ---
 
 document.addEventListener('DOMContentLoaded', () => {
     // --- DOM Element Referansları ---
@@ -27,7 +26,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let currentRoomID = null;
     let userId = null; // Socket.IO tarafından atanacak kendi ID'miz
 
-    // YENİ: Kart Seti Bilgileri (key özelliği eklendi, backend'e key gönderilecek)
+    // Kart Seti Bilgileri (key özelliği eklendi, backend'e key gönderilecek)
     const cardSets = {
         personita: { name: 'Personita Kartları', total: 77, folder: 'images/personita', extension: '.jpg', key: 'personita' },
         terapi_sb: { name: 'Siyah Beyaz Terapi Kartları', total: 44, folder: 'images/terapi_sb', extension: '.jpg', key: 'terapi_sb' }
@@ -46,94 +45,46 @@ document.addEventListener('DOMContentLoaded', () => {
     // Varsayılan olarak sadece kart seti seçimi (ve auth placeholder) görünür.
     // URL'de oda ID varsa bu durum değişir (connect olayında yönetilir).
     function setInitialUIState() {
-        console.log("setInitialUIState çalışıyor..."); // <-- Eklendi
-        
-        console.log("userAuthControls referansı:", userAuthControls); // <-- Eklendi
-        userAuthControls.style.display = 'block';
-        console.log("userAuthControls display ayarlandı."); // <-- Eklendi
-        
-        console.log("cardSetSelectionArea referansı:", cardSetSelectionArea); // <-- Eklendi
-        cardSetSelectionArea.style.display = 'block';
-        console.log("cardSetSelectionArea display ayarlandı."); // <-- Eklendi
-        
-        console.log("roomControlsArea referansı:", roomControlsArea); // <-- Eklendi
-        roomControlsArea.style.display = 'none';
-        console.log("roomControlsArea display ayarlandı."); // <-- Eklendi
-        
-        console.log("controls referansı:", document.querySelector('.controls')); // <-- Eklendi
-        document.querySelector('.controls').style.display = 'none';
-        console.log("controls display ayarlandı."); // <-- Eklendi
-        
-        console.log("cardPool referansı:", cardPool); // <-- Eklendi
-        cardPool.style.display = 'none';
-        console.log("cardPool display ayarlandı."); // <-- Eklendi
-        
-        console.log("selectedCardsContainer referansı:", selectedCardsContainer); // <-- Eklendi
-        selectedCardsContainer.parentElement.style.display = 'none';
-        console.log("selectedCardsContainer.parentElement display ayarlandı."); // <-- Eklendi
-        
-        console.log("selectSetPrompt referansı:", selectSetPrompt); // <-- Eklendi
-        selectSetPrompt.style.display = 'block'; // Kart havuzu placeholder'ı göster
-        console.log("selectSetPrompt display ayarlandı."); // <-- Eklendi
-        
-        console.log("activeCardSetNameDisplay referansı:", activeCardSetNameDisplay); // <-- Eklendi
-        activeCardSetNameDisplay.textContent = 'Kart Seti Seçilmedi'; // Başlığı resetle
-        console.log("activeCardSetNameDisplay içeriği ayarlandı."); // <-- Eklendi
-        
-        console.log("currentRoomDisplay referansı:", currentRoomDisplay); // <-- Eklendi
-        currentRoomDisplay.textContent = 'Henüz bir odada değilsiniz.';
-        console.log("currentRoomDisplay içeriği ayarlandı."); // <-- Eklendi
-        
-        console.log("roomInfoText referansı:", roomInfoText); // <-- Eklendi
-        roomInfoText.textContent = '';
-        console.log("roomInfoText içeriği ayarlandı."); // <-- Eklendi
-        
-        // Diğer metinleri de resetle
-        console.log("selectedCountSpan referansı:", selectedCountSpan); // <-- Eklendi
-        selectedCountSpan.textContent = '0';
-        console.log("selectedCountSpan içeriği ayarlandı."); // <-- Eklendi
-        
-        console.log("infoText referansı:", infoText); // <-- Eklendi
-        infoText.textContent = `Seçilen Kartlar (Odada Toplam): 0/${MAX_SELECTED_CARDS_PER_ROOM}`;
-        console.log("infoText içeriği ayarlandı."); // <-- Eklendi
-        
-        console.log("noSelectedText referansı:", noSelectedText); // <-- Eklendi
-        noSelectedText.style.display = 'block'; // Seçilenler alanı placeholder göster
-        console.log("noSelectedText display ayarlandı."); // <-- Eklendi
-        
-        console.log("selectedCardsContainer temizleniyor..."); // <-- Eklendi
-        selectedCardsContainer.innerHTML = ''; // Seçilenleri temizle
-        console.log("selectedCardsContainer içeriği temizlendi."); // <-- Eklendi
-        
-        console.log("noSelectedText ekleniyor..."); // <-- Eklendi
-        selectedCardsContainer.appendChild(noSelectedText); // Placeholder'ı ekle
-        console.log("noSelectedText eklendi."); // <-- Eklendi
-        
-        console.log("cardPool temizleniyor..."); // <-- Eklendi
-        cardPool.innerHTML = ''; // Kart havuzunu temizle
-        console.log("cardPool içeriği temizlendi."); // <-- Eklendi
-        
-        console.log("selectSetPrompt ekleniyor..."); // <-- Eklendi
-        cardPool.appendChild(selectSetPrompt); // Kart havuzu placeholder'ı ekle
-        console.log("selectSetPrompt eklendi."); // <-- Eklendi
+        console.log("setInitialUIState çalışıyor...");
 
-        console.log("allSelectedCardsInRoom temizleniyor..."); // <-- Eklendi
+        // Tüm ana alanları varsayılan olarak gizle
+        if(userAuthControls) userAuthControls.style.display = 'none';
+        if(cardSetSelectionArea) cardSetSelectionArea.style.display = 'none';
+        if(roomControlsArea) roomControlsArea.style.display = 'none';
+        const controlsDiv = document.querySelector('.controls');
+        if(controlsDiv) controlsDiv.style.display = 'none';
+        if(cardPool) cardPool.style.display = 'none';
+        if(selectedCardsContainer && selectedCardsContainer.parentElement) {
+            selectedCardsContainer.parentElement.style.display = 'none';
+        }
+
+        // Sonra başlangıçta görünmesi gerekenleri göster
+        if(userAuthControls) userAuthControls.style.display = 'block'; // Auth placeholder görünür
+        if(cardSetSelectionArea) cardSetSelectionArea.style.display = 'block'; // Kart seti seçim alanı görünür
+
+        // Metinleri ve placeholder'ları resetle
+        if(selectSetPrompt) selectSetPrompt.style.display = 'block'; // Kart havuzu placeholder'ı göster
+        if(activeCardSetNameDisplay) activeCardSetNameDisplay.textContent = 'Kart Seti Seçilmedi'; // Başlığı resetle
+        if(currentRoomDisplay) currentRoomDisplay.textContent = 'Henüz bir odada değilsiniz.';
+        if(roomInfoText) roomInfoText.textContent = '';
+        if(selectedCountSpan) selectedCountSpan.textContent = '0';
+        if(infoText) infoText.textContent = `Seçilen Kartlar (Odada Toplam): 0/${MAX_SELECTED_CARDS_PER_ROOM}`;
+        if(noSelectedText) noSelectedText.style.display = 'block'; // Seçilenler alanı placeholder göster
+
+        // İçerikleri temizle
+        if(selectedCardsContainer) selectedCardsContainer.innerHTML = ''; // Seçilenleri temizle
+        if(selectedCardsContainer && noSelectedText) selectedCardsContainer.appendChild(noSelectedText); // Placeholder'ı ekle
+        if(cardPool) cardPool.innerHTML = ''; // Kart havuzunu temizle
+        if(cardPool && selectSetPrompt) cardPool.appendChild(selectSetPrompt); // Kart havuzu placeholder'ı ekle
+
+
+        // State değişkenlerini sıfırla
         allSelectedCardsInRoom.clear();
-        console.log("allSelectedCardsInRoom temizlendi."); // <-- Eklendi
-        
-        console.log("localSelectedCardIds temizleniyor..."); // <-- Eklendi
         localSelectedCardIds.clear();
-        console.log("localSelectedCardIds temizlendi."); // <-- Eklendi
-        
-        console.log("currentRoomID sıfırlanıyor..."); // <-- Eklendi
-        currentRoomID = null; // Oda ID'sini sıfırla
-        console.log("currentRoomID sıfırlandı."); // <-- Eklendi
-        
-        console.log("activeCardSet sıfırlanıyor..."); // <-- Eklendi
-        activeCardSet = null; // Aktif seti sıfırla
-        console.log("activeCardSet sıfırlandı."); // <-- Eklendi
-        
-        console.log("setInitialUIState bitti."); // <-- Eklendi
+        currentRoomID = null;
+        activeCardSet = null;
+
+        console.log("setInitialUIState bitti.");
     }
 
 
@@ -150,15 +101,20 @@ document.addEventListener('DOMContentLoaded', () => {
              // URL'den oda ID geldi => Danışan olma durumu (veya danışmanın linkle girmesi)
              // Kart seti seçimi beklemeden odaya katılmayı dene
              // Arayüzü odaya katılım bekleniyor durumuna getir
+             if(userAuthControls) userAuthControls.style.display = 'none';
+             if(cardSetSelectionArea) cardSetSelectionArea.style.display = 'none';
+             if(roomControlsArea) roomControlsArea.style.display = 'block'; // Oda kontrollerini göster
+             if(roomIdInput) roomIdInput.style.display = 'none'; // Oda ID inputunu gizle
+             if(createJoinRoomButton) createJoinRoomButton.style.display = 'none'; // Oda oluştur/katıl butonunu gizle
+             const controlsDiv = document.querySelector('.controls');
+             if(controlsDiv) controlsDiv.style.display = 'block'; // Reset butonu vs göster
+             if(cardPool) cardPool.style.display = 'flex'; // Kart havuzunu göster
+             if(selectedCardsContainer && selectedCardsContainer.parentElement) {
+                selectedCardsContainer.parentElement.style.display = 'block'; // Seçilenler alanı göster
+             }
 
-             userAuthControls.style.display = 'none'; // Auth alanını gizle
-             cardSetSelectionArea.style.display = 'none'; // Set seçimini gizle
-             roomControlsArea.style.display = 'block'; // Oda kontrollerini göster
-             roomIdInput.style.display = 'none'; // Oda ID inputunu gizle
-             createJoinRoomButton.style.display = 'none'; // Oda oluştur/katıl butonunu gizle
-
-             currentRoomDisplay.textContent = `Odaya Katılıyor: "${roomIDFromUrl}"...`;
-             roomInfoText.textContent = 'Sunucudan yanıt bekleniyor...';
+             if(currentRoomDisplay) currentRoomDisplay.textContent = `Odaya Katılıyor: "${roomIDFromUrl}"...`;
+             if(roomInfoText) roomInfoText.textContent = 'Sunucudan yanıt bekleniyor...';
 
              // Backend'e katılma isteği gönder (Set bilgisi backend'den gelecek)
              // NOT: URL ile katılırken backend'e set bilgisi göndermiyoruz,
@@ -169,9 +125,9 @@ document.addEventListener('DOMContentLoaded', () => {
              // URL'de oda ID yok => Danışman olma veya ilk giriş durumu
              // setInitialUIState() zaten bu durumu ayarladı (Set seçimi görünür).
              // Oda ID inputunu ve butonu görünür yapalım ki danışman oda kurabilsin
-             roomControlsArea.style.display = 'block'; // Oda kontroller alanını göster
-             roomIdInput.style.display = 'inline-block'; // Inputu göster
-             createJoinRoomButton.style.display = 'inline-block'; // Butonu göster
+             if(roomControlsArea) roomControlsArea.style.display = 'block'; // Oda kontroller alanını göster
+             if(roomIdInput) roomIdInput.style.display = 'inline-block'; // Inputu göster
+             if(createJoinRoomButton) createJoinRoomButton.style.display = 'inline-block'; // Butonu göster
 
              // Diğer tüm arayüz alanları setInitialUIState() ile gizli kalır.
         }
@@ -181,7 +137,7 @@ document.addEventListener('DOMContentLoaded', () => {
         console.log('Backend ile bağlantı kesildi!');
         alert('Sunucu ile bağlantı kesildi. Lütfen sayfayı yenileyin.'); // Kullanıcıya bilgi ver
         setInitialUIState(); // Arayüzü başlangıç durumuna döndür
-        currentRoomDisplay.textContent = 'Sunucu ile bağlantı kesildi.';
+        if(currentRoomDisplay) currentRoomDisplay.textContent = 'Sunucu ile bağlantı kesildi.';
     });
 
     // --- Kart Seti Seçimi Mantığı ---
@@ -199,25 +155,29 @@ document.addEventListener('DOMContentLoaded', () => {
                 console.log('Kart seti seçildi:', activeCardSet.name, 'Anahtar:', selectedSetKey);
 
                 // Arayüzü güncelle: Kart seti seçimi alanını gizle, oda kontrollerini ve kart alanlarını göster
-                cardSetSelectionArea.style.display = 'none';
-                userAuthControls.style.display = 'none'; // Giriş alanı (şimdilik) gizle
-                roomControlsArea.style.display = 'block'; // Oda kontrollerini göster
-                document.querySelector('.controls').style.display = 'block'; // Reset butonu ve bilgi metnini göster
-                cardPool.style.display = 'flex'; // Kart havuzunu göster (flex yapısı için)
-                selectedCardsContainer.parentElement.style.display = 'block'; // Seçilenler başlığını ve alanı göster
+                if(cardSetSelectionArea) cardSetSelectionArea.style.display = 'none';
+                if(userAuthControls) userAuthControls.style.display = 'none'; // Giriş alanı (şimdilik) gizle
+                if(roomControlsArea) roomControlsArea.style.display = 'block'; // Oda kontrollerini göster
+                const controlsDiv = document.querySelector('.controls');
+                if(controlsDiv) controlsDiv.style.display = 'block'; // Reset butonu ve bilgi metnini göster
+                if(cardPool) cardPool.style.display = 'flex'; // Kart havuzunu göster (flex yapısı için)
+                 if(selectedCardsContainer && selectedCardsContainer.parentElement) {
+                    selectedCardsContainer.parentElement.style.display = 'block'; // Seçilenler başlığını ve alanı göster
+                 }
 
-                activeCardSetNameDisplay.textContent = activeCardSet.name; // Başlıktaki adı güncelle
-                selectSetPrompt.style.display = 'none'; // Placeholder metni gizle
+
+                if(activeCardSetNameDisplay) activeCardSetNameDisplay.textContent = activeCardSet.name; // Başlıktaki adı güncelle
+                if(selectSetPrompt) selectSetPrompt.style.display = 'none'; // Placeholder metni gizle
 
                 // Kartları Yükle (Seçilen Sete Göre)
                 initializeCards(); // Bu, updateUIForRoom'u çağıracak.
 
-                // Oda ID inputuna odaklan ve görünür yap
-                roomIdInput.style.display = 'inline-block'; // Inputu göster
-                createJoinRoomButton.style.display = 'inline-block'; // Butonu göster
-                roomIdInput.focus();
+                // Oda ID inputunu odaklan ve görünür yap
+                if(roomIdInput) roomIdInput.style.display = 'inline-block'; // Inputu göster
+                if(createJoinRoomButton) createJoinRoomButton.style.display = 'inline-block'; // Butonu göster
+                 if(roomIdInput) roomIdInput.focus();
 
-                currentRoomDisplay.textContent = 'Bir Oda ID girip Katılın/Oluşturun'; // Oda bekliyor mesajı
+                if(currentRoomDisplay) currentRoomDisplay.textContent = 'Bir Oda ID girip Katılın/Oluşturun'; // Oda bekliyor mesajı
 
             } else {
                 console.error('Bilinmeyen kart seti seçildi veya data-setname hatalı:', selectedSetKey);
@@ -250,9 +210,9 @@ document.addEventListener('DOMContentLoaded', () => {
         img.onerror = () => {
             console.warn(`Görsel yüklenemedi: ${imagePath}`);
             // Kırık resim ikonunu gizle ve numarayı belirgin yap
-            img.style.display = 'none';
-            cardNumberSpan.style.backgroundColor = 'transparent';
-            cardNumberSpan.style.color = '#dc3545'; // Hata rengi
+            if(img) img.style.display = 'none';
+            if(cardNumberSpan) cardNumberSpan.style.backgroundColor = 'transparent';
+             if(cardNumberSpan) cardNumberSpan.style.color = '#dc3545'; // Hata rengi
         };
         card.appendChild(img);
 
@@ -270,12 +230,12 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!activeCardSet) {
             console.error("Aktif kart seti seçilmeden initializeCards çağrıldı!");
             setInitialUIState(); // Başlangıç durumuna dön
-            selectSetPrompt.textContent = 'Kart seti yüklenemedi. Lütfen tekrar deneyin.';
+            if(selectSetPrompt) selectSetPrompt.textContent = 'Kart seti yüklenemedi. Lütfen tekrar deneyin.';
             return;
         }
 
-        cardPool.innerHTML = ''; // Kart havuzunu temizle
-        selectSetPrompt.style.display = 'none'; // Placeholder'ı gizle
+        if(cardPool) cardPool.innerHTML = ''; // Kart havuzunu temizle
+        if(selectSetPrompt) selectSetPrompt.style.display = 'none'; // Placeholder'ı gizle
 
         const TOTAL_CARDS = activeCardSet.total; // Aktif setin toplam kart sayısı
 
@@ -283,7 +243,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const card = createCardElement(i);
             if(card) { // Eğer createCardElement hata vermezse
                  card.addEventListener('click', () => handleCardPoolClick(i, card));
-                 cardPool.appendChild(card);
+                 if(cardPool) cardPool.appendChild(card);
             }
         }
          // Kartlar yüklendikten sonra UI'ı güncelle (seçili kartlar varsa göstermek için)
@@ -364,7 +324,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         if (currentRoomID === roomID) {
-            roomInfoText.textContent = `Zaten "${roomID}" odasındasınız.`;
+            if(roomInfoText) roomInfoText.textContent = `Zaten "${roomID}" odasındasınız.`;
             return;
         }
 
@@ -375,12 +335,12 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         // Oda ID ve Seçilen Kart Seti anahtarı ile katılma isteği gönder
-        socket.emit('joinRoom', { roomID: currentRoomID, cardSet: activeCardSet.key }); // <<< Burası artık key gönderiyor
+        socket.emit('joinRoom', { roomID: roomID, cardSet: activeCardSet.key }); // <<< Burası artık key gönderiyor
 
         currentRoomID = roomID; // Oda ID'sini frontend state'ine kaydet
 
-        currentRoomDisplay.textContent = `Odaya Katılıyor: "${currentRoomID}"...`;
-        roomInfoText.textContent = 'Sunucudan yanıt bekleniyor...';
+        if(currentRoomDisplay) currentRoomDisplay.textContent = `Odaya Katılıyor: "${currentRoomID}"...`;
+        if(roomInfoText) roomInfoText.textContent = 'Sunucudan yanıt bekleniyor...';
         // Başarılı katılım backend'den 'currentSelectedCards' veya 'roomFull' olaylarıyla bildirilecek
     });
 
@@ -406,14 +366,14 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         // Backend'de admin yetkisi kontrol edilecek ileride
         socket.emit('resetRoomCards', currentRoomID); // Backend'e oda ID'sini gönder
-        roomInfoText.textContent = 'Kartlar sıfırlanıyor...';
+        if(roomInfoText) roomInfoText.textContent = 'Kartlar sıfırlanıyor...';
     });
 
     // --- Arayüz Güncelleme Fonksiyonu ---
     function updateUIForRoom() {
          if (!activeCardSet) {
              console.error("updateUIForRoom: Aktif kart seti tanımlı değil!");
-             //setInitialUIState(); // Başlangıç durumuna dön (sonsuz döngüye neden olabilir!)
+             // setInitialUIState(); // Başlangıç durumuna dön (sonsuz döngüye neden olabilir!)
              // roomInfoText.textContent = 'Hata: Arayüz güncellenemiyor (Set Tanımsız).';
              return; // Güncelleme yapma
          }
@@ -422,7 +382,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const poolCards = cardPool.querySelectorAll('.card');
         poolCards.forEach(card => {
             const cId = card.dataset.cardId;
-            card.classList.remove('disabled-in-pool', 'selected-by-me'); // Önceki durumları temizle
+            card.classList.remove('disabled-in-pool', 'selected-by-me', 'selected-by-other'); // Önceki durumları temizle
             card.style.cursor = 'pointer'; // Varsayılan imleci ayarla
 
             if (allSelectedCardsInRoom.has(cId)) {
@@ -439,12 +399,12 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         // Seçilen kartlar alanını güncelle
-        selectedCardsContainer.innerHTML = ''; // Temizle
+        if(selectedCardsContainer) selectedCardsContainer.innerHTML = ''; // Temizle
         if (allSelectedCardsInRoom.size === 0) {
-            noSelectedText.style.display = 'block';
-            selectedCardsContainer.appendChild(noSelectedText);
+            if(noSelectedText) noSelectedText.style.display = 'block';
+            if(selectedCardsContainer && noSelectedText) selectedCardsContainer.appendChild(noSelectedText);
         } else {
-            noSelectedText.style.display = 'none';
+            if(noSelectedText) noSelectedText.style.display = 'none';
             // Seçili kartları (kendi seçtiklerimiz ve başkalarının seçtikleri) göster
             // Map'in entry'lerini array'e çevirip sıralayabiliriz (örn: kartaId'ye göre)
             const sortedSelectedCards = Array.from(allSelectedCardsInRoom.entries())
@@ -459,24 +419,26 @@ document.addEventListener('DOMContentLoaded', () => {
                          // Başkasının kartıysa farklı bir işaretleme/stil yapılabilir
                          // cardClone.style.borderColor = 'gray'; // Örnek: Başkasının kartı
                          cardClone.classList.add('selected-by-other'); // Yeni class
-                         cardClone.querySelector('.card-number').textContent += ` (${selectorUserId.substring(0,3)}...)`; // Kimin seçtiğini göster (opsiyonel)
+                         const cardNumberSpan = cardClone.querySelector('.card-number');
+                         if(cardNumberSpan) cardNumberSpan.textContent += ` (${selectorUserId.substring(0,3)}...)`; // Kimin seçtiğini göster (opsiyonel)
                      } else {
                          cardClone.classList.add('selected-by-me'); // Benim seçtiğim klon
                      }
-                     selectedCardsContainer.appendChild(cardClone);
+                     if(selectedCardsContainer) selectedCardsContainer.appendChild(cardClone);
                  }
             });
         }
 
         // Bilgi metinlerini güncelle
-        selectedCountSpan.textContent = allSelectedCardsInRoom.size; // Odada toplam seçilen kart sayısı
-        infoText.textContent = `Seçilen Kartlar (Odada Toplam): ${allSelectedCardsInRoom.size}/${MAX_SELECTED_CARDS_PER_ROOM}`;
+        if(selectedCountSpan) selectedCountSpan.textContent = allSelectedCardsInRoom.size; // Odada toplam seçilen kart sayısı
+        if(infoText) infoText.textContent = `Seçilen Kartlar (Odada Toplam): ${allSelectedCardsInRoom.size}/${MAX_SELECTED_CARDS_PER_ROOM}`;
         // currentRoomDisplay ve roomInfoText'teki oda bilgileri zaten odaya katılırken güncelleniyor.
-        roomInfoText.textContent = `Kişisel Seçimler: ${localSelectedCardIds.size}/${MAX_SELECTED_CARDS_PER_USER}`; // Kişisel limiti de göster
-        // Oda katılım mesajını sil
-        if (roomInfoText.textContent.includes('Odaya katılıyor...') || roomInfoText.textContent.includes('Sunucudan yanıt bekleniyor...')) {
-             roomInfoText.textContent = ''; // Bekleme mesajını temizle
-        }
+         // Kişisel Seçimler bilgisini de güncelleyelim (roomInfoText odaya katılım mesajıyla karışmasın)
+         const personalCountText = `Kişisel Seçimler: ${localSelectedCardIds.size}/${MAX_SELECTED_CARDS_PER_USER}`;
+         const roomStatusText = `Oda: "${currentRoomID}" (ID: ${userId.substring(0,6)}...)`;
+        if(currentRoomDisplay) currentRoomDisplay.textContent = roomStatusText;
+        if(roomInfoText) roomInfoText.textContent = personalCountText;
+
 
     }
 
@@ -489,4 +451,151 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // YENİ: Backend'den gelen set anahtarını alarak aktif seti ata
         const backendCardSetKey = data.cardSet; // <<< Backend'den gelen set bilgisi, KEY olmalı artık
-        const matchingCardSet = cardSets[backendCardSetKey];} // <<< Doğrudan anahtarla eşleştirme
+        const matchingCardSet = cardSets[backendCardSetKey]; // <<< Doğrudan anahtarla eşleştirme
+
+        // Hata kontrolü: Backend'den gelen set anahtarı geçerli mi?
+        if (!backendCardSetKey || !matchingCardSet) { // <<< Kontrolü bu şekilde değiştirdik!
+             console.error('Backend\'den geçersiz set anahtarı geldi:', backendCardSetKey);
+             if(roomInfoText) roomInfoText.textContent = 'Hata: Geçersiz oda bilgisi (Set Anahtarı Hatalı).';
+             // Otomatik ayrılma, başlangıç durumu vb.
+             if(data.roomID) { // Eğer backend bir roomID gönderdiyse o odayı terk et
+                 socket.emit('leaveRoom', data.roomID);
+             }
+             setInitialUIState(); // Arayüzü başlangıç durumuna döndür
+             alert('Odaya katılırken bir hata oluştu: Geçersiz kart seti bilgisi.');
+             return; // Hata varsa burada dur
+        }
+
+        // Eğer her şey yolundaysa:
+        currentRoomID = data.roomID; // Backend'den gelen teyitli oda ID'si
+        activeCardSet = matchingCardSet; // <<< Eşleşen set objesini ata
+
+        // Arayüzü odaya uygun hale getir
+        if(userAuthControls) userAuthControls.style.display = 'none'; // Giriş alanı (şimdilik) gizle
+        if(cardSetSelectionArea) cardSetSelectionArea.style.display = 'none'; // Set seçimi gizle
+        if(roomControlsArea) roomControlsArea.style.display = 'block'; // Oda kontrollerini göster
+        const controlsDiv = document.querySelector('.controls');
+        if(controlsDiv) controlsDiv.style.display = 'block'; // Reset butonu vs göster
+        if(cardPool) cardPool.style.display = 'flex'; // Kart havuzunu göster
+         if(selectedCardsContainer && selectedCardsContainer.parentElement) {
+            selectedCardsContainer.parentElement.style.display = 'block'; // Seçilenler alanı göster
+         }
+
+        if(activeCardSetNameDisplay) activeCardSetNameDisplay.textContent = activeCardSet.name; // Başlıktaki adı güncelle
+        if(selectSetPrompt) selectSetPrompt.style.display = 'none'; // Placeholder gizle
+
+        // Kartları doğru set'e göre yükle (Bu aynı zamanda updateUIForRoom'u çağırır)
+        initializeCards();
+
+        // Mevcut seçili kartları işle (initializeCards'ın sonundaki updateUIForRoom bunu yapacak)
+        allSelectedCardsInRoom.clear(); // Öncekileri temizle
+        localSelectedCardIds.clear(); // Kişisel seçilenleri temizle
+        data.selectedCards.forEach(cardInfo => { // Backend'den gelen seçili kartları ekle
+            allSelectedCardsInRoom.set(String(cardInfo.cardId), cardInfo.userId);
+            if (cardInfo.userId === userId) {
+                localSelectedCardIds.add(String(cardInfo.cardId));
+            }
+        });
+
+        // updateUIForRoom() initializeCards tarafından çağrıldığı için burada tekrar çağırmaya gerek yok.
+
+        // Oda bilgisi metinlerini güncelle (Zaten yukarıda yapılıyor, burada tekrarlamaya gerek yok)
+        // currentRoomDisplay.textContent = `Oda: "${currentRoomID}" (ID: ${userId.substring(0,6)}...)`;
+        // roomInfoText.textContent = `Odaya başarıyla katıldınız. Kullanıcılar: ${data.userCount}/${MAX_USERS_PER_ROOM}`;
+
+
+        // ... Geri kalan mantık (Davet linki vb.) ...
+
+    }); // <<< BURASI socket.on('currentSelectedCards') DİNLEYİCİSİNİN KAPANIŞI
+
+    // --- Oda Dolu Hatası ---
+    socket.on('roomFull', () => {
+        alert('Bu oda dolu (' + MAX_USERS_PER_ROOM + ' kişi). Lütfen farklı bir Oda ID deneyin.');
+        console.warn('Oda dolu hatası alındı.');
+        setInitialUIState(); // Başlangıç durumuna dön
+        if(currentRoomDisplay) currentRoomDisplay.textContent = 'Oda dolu.';
+        if(roomInfoText) roomInfoText.textContent = 'Lütfen farklı bir Oda ID girin.';
+    });
+
+     // Backend'den gelen hata mesajları için (örn: farklı set ile kurulmuş oda)
+     socket.on('errorJoiningRoom', (message) => {
+         console.error('Odaya katılırken hata:', message);
+         alert('Odaya katılırken bir hata oluştu: ' + message);
+         setInitialUIState(); // Başlangıç durumuna dön
+         if(currentRoomDisplay) currentRoomDisplay.textContent = 'Katılım Hatası.';
+         if(roomInfoText) roomInfoText.textContent = message;
+     });
+
+
+    // Başka Kullanıcıdan Kart Seçildi/Kendi Seçimim Onaylandı
+    socket.on('cardSelected', (data) => { // { cardId, userId }
+        const cardIdStr = String(data.cardId);
+        allSelectedCardsInRoom.set(cardIdStr, data.userId);
+        if (data.userId === userId) {
+            localSelectedCardIds.add(cardIdStr);
+             // roomInfoText.textContent = `Kart ${data.cardId} seçildi.`; // Çok sık güncellenmesin diye kaldırdım
+        } else {
+             // roomInfoText.textContent = `Kullanıcı (${data.userId.substring(0,3)}...) Kart ${data.cardId} seçti.`; // Çok sık güncellenmesin diye kaldırdım
+        }
+        updateUIForRoom(); // Arayüzü güncelle
+    });
+
+    // Başka Kullanıcıdan Kart İptal Edildi/Kendi İptalim Onaylandı
+    socket.on('cardDeselected', (data) => { // { cardId, userId }
+        const cardIdStr = String(data.cardId);
+        if (allSelectedCardsInRoom.has(cardIdStr)) {
+             const selectingUserId = allSelectedCardsInRoom.get(cardIdStr);
+             allSelectedCardsInRoom.delete(cardIdStr);
+             if (selectingUserId === userId) {
+                 localSelectedCardIds.delete(cardIdStr);
+                 // roomInfoText.textContent = `Kart ${data.cardId} iptal edildi.`; // Çok sık güncellenmesin diye kaldırdım
+             } else {
+                 // Başkası kendi seçtiği kartı iptal ettiğinde
+                 // roomInfoText.textContent = `Kullanıcı (${selectingUserId.substring(0,3)}...) Kart ${data.cardId} iptal etti.`; // Çok sık güncellenmesin diye kaldırdım
+             }
+             updateUIForRoom(); // Arayüzü güncelle
+        } else {
+             console.warn(`Deselect isteği geldi ama kart (${data.cardId}) zaten seçili değil.`);
+        }
+    });
+
+    // Odadaki Kartlar Sıfırlandı
+    socket.on('roomCardsReset', () => {
+        allSelectedCardsInRoom.clear();
+        localSelectedCardIds.clear();
+        updateUIForRoom();
+        if(roomInfoText) roomInfoText.textContent = 'Odadaki tüm kart seçimleri sıfırlandı.';
+         alert('Odadaki tüm kart seçimleri sıfırlandı.'); // Kullanıcıya belirgin uyarı
+    });
+
+     // Kullanıcı Sayısı Güncellemesi (İsteğe bağlı bilgi)
+     socket.on('userCountUpdate', (count) => {
+         console.log(`Odadaki kullanıcı sayısı güncellendi: ${count}`);
+         // İsterseniz bu bilgiyi currentRoomDisplay veya roomInfoText'te gösterebilirsiniz.
+          const userCountText = `Kullanıcılar: ${count}/${MAX_USERS_PER_ROOM}`;
+          if (currentRoomDisplay && currentRoomDisplay.textContent.includes('Oda:')) { // Eğer oda bilgisi zaten görünüyorsa
+               if (currentRoomDisplay.textContent.includes('| Kullanıcılar:')) {
+                   currentRoomDisplay.textContent = currentRoomDisplay.textContent.split('|')[0] + '| ' + userCountText;
+               } else {
+                    currentRoomDisplay.textContent += ' | ' + userCountText;
+               }
+          } else {
+              // Eğer oda bilgisi henüz kurulmadıysa sadece kullanıcı sayısı metnini roomInfoText'e ekleyebiliriz
+              if(roomInfoText) roomInfoText.textContent = userCountText;
+          }
+     });
+
+    // --- Uygulama Başlangıcı ---
+    // setInitialUIState(); // Sayfa yüklendiğinde başlangıç durumunu ayarla
+    // initializeCards() burada ÇALIŞTIRILMIYOR, çünkü set seçilince veya URL'den odaya girilince çalışacak.
+    // updateUIForRoom() da başlangıçta çalışmıyor, çünkü oda bilgisi yok.
+    // Sadece socket.on('connect') içinde URL kontrolü veya set seçimi bekleniyor.
+
+    // Sayfa yüklendiğinde Socket.IO bağlantısı kurulur ve 'connect' olayı tetiklenir.
+    // 'connect' olayı içinde setInitialUIState() veya URL kontrolü yapılır.
+
+    // Sayfa yüklendiğinde başlangıç durumunu ayarla (Socket.IO bağlanmadan da çalışmalı)
+     setInitialUIState(); // <<< Sayfa yüklendiğinde setInitialUIState() çağrılıyor
+
+
+}); // <<< TÜM DOMContentLoaded BLOĞUNUN KAPANIŞI
