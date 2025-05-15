@@ -1,8 +1,10 @@
 // --- START OF FILE script.js (Nihai Düzeltilmiş Versiyon) ---
 
 document.addEventListener('DOMContentLoaded', () => {
+    console.log("DOMContentLoaded tetiklendi. Script çalışıyor...")
     // --- DOM Element Referansları ---
     const cardSetSelectionArea = document.getElementById('card-set-selection');
+    console.log("Referans: cardSetSelectionArea", cardSetSelectionArea);
     const roomControlsArea = document.getElementById('room-controls-area');
     const userAuthControls = document.querySelector('.user-auth-controls'); // Şimdilik sadece placeholder
     const selectSetButtons = document.querySelectorAll('.set-options button');
@@ -22,6 +24,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- Sabitler ve Değişkenler ---
     const backendUrl = 'https://terapikart.onrender.com'; // SİZİN RENDER URL'NİZ
     const socket = io(backendUrl);
+    console.log("Socket.IO başlatıldı.");
 
     let currentRoomID = null;
     let userId = null; // Socket.IO tarafından atanacak kendi ID'miz
@@ -97,7 +100,10 @@ document.addEventListener('DOMContentLoaded', () => {
         const urlParams = new URLSearchParams(window.location.search);
         const roomIDFromUrl = urlParams.get('oda'); // index.html?oda=ODA_IDSI
 
+        console.log("Connect içinde URL kontrolü yapılıyor. roomIDFromUrl:", roomIDFromUrl);
+
         if (roomIDFromUrl) {
+            console.log("URL'de oda ID var. Danışan akışı...");
              // URL'den oda ID geldi => Danışan olma durumu (veya danışmanın linkle girmesi)
              // Kart seti seçimi beklemeden odaya katılmayı dene
              // Arayüzü odaya katılım bekleniyor durumuna getir
@@ -122,6 +128,7 @@ document.addEventListener('DOMContentLoaded', () => {
              socket.emit('joinRoom', { roomID: roomIDFromUrl });
 
         } else {
+            console.log("URL'de oda ID yok. Danışman akışı...");
              // URL'de oda ID yok => Danışman olma veya ilk giriş durumu
              // setInitialUIState() zaten bu durumu ayarladı (Set seçimi görünür).
              // Oda ID inputunu ve butonu görünür yapalım ki danışman oda kurabilsin
@@ -585,7 +592,7 @@ document.addEventListener('DOMContentLoaded', () => {
           }
      });
 
-    // --- Uygulama Başlangıcı ---
+        // --- Uygulama Başlangıcı ---
     // setInitialUIState(); // Sayfa yüklendiğinde başlangıç durumunu ayarla
     // initializeCards() burada ÇALIŞTIRILMIYOR, çünkü set seçilince veya URL'den odaya girilince çalışacak.
     // updateUIForRoom() da başlangıçta çalışmıyor, çünkü oda bilgisi yok.
@@ -595,7 +602,12 @@ document.addEventListener('DOMContentLoaded', () => {
     // 'connect' olayı içinde setInitialUIState() veya URL kontrolü yapılır.
 
     // Sayfa yüklendiğinde başlangıç durumunu ayarla (Socket.IO bağlanmadan da çalışmalı)
-     setInitialUIState(); // <<< Sayfa yüklendiğinde setInitialUIState() çağrılıyor
+     console.log("setInitialUIState çağrılacak..."); // <-- Bu logu buraya ekleyin
+     setInitialUIState(); // <<< Bu çağrı
+     console.log("setInitialUIState çağrıldı."); // <-- Bu logu buraya ekleyin
 
+
+    // --- DOMContentLoaded bloğunun kapanış parantezi ---
+    console.log("DOMContentLoaded bloğu sonu."); // <-- Bu logu buraya ekleyin
 
 }); // <<< TÜM DOMContentLoaded BLOĞUNUN KAPANIŞI
