@@ -58,7 +58,6 @@ document.addEventListener('DOMContentLoaded', () => {
         if(controlsDiv) controlsDiv.style.display = 'none';
         if(cardPool) cardPool.style.display = 'none';
         if(selectedCardsContainer && selectedCardsContainer.parentElement) {
-            selectedCardsContainer.parentElement.style.display = 'none';
         }
 
         // Sonra başlangıçta görünmesi gerekenleri göster
