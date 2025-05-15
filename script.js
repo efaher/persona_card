@@ -490,3 +490,4 @@ document.addEventListener('DOMContentLoaded', () => {
         // YENİ: Backend'den gelen set anahtarını alarak aktif seti ata
         const backendCardSetKey = data.cardSet; // <<< Backend'den gelen set bilgisi, KEY olmalı artık
         const matchingCardSet = cardSets[backendCardSetKey]; // <<< Doğrudan anahtarla eşleştirme
+    }}}
