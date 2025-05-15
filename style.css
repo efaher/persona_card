@@ -200,3 +200,168 @@ h1, h2 {
     border-color: #55efc4; /* Benim tarafımdan seçilenin kenarlığı */
     /* opacity: 0.7; İsteğe bağlı: hafif transparan */
 }
+/* style.css dosyasının sonuna eklenecekler */
+
+/* Kullanıcı Giriş/Kayıt Alanı (Placeholder) */
+.user-auth-controls {
+    text-align: center;
+    margin-bottom: 20px;
+    padding: 15px;
+    background-color: #e9ecef;
+    border-radius: 5px;
+    border: 1px solid #ced4da;
+    color: #495057;
+}
+
+.user-auth-controls p {
+    margin: 0;
+    font-style: italic;
+}
+
+/* Kart Seti Seçim Alanı */
+.card-set-selector {
+    text-align: center;
+    margin-bottom: 30px;
+    padding: 20px;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+.card-set-selector h2 {
+    margin-top: 0;
+    color: #007bff; /* Veya ana renk paletinize uygun bir renk */
+}
+
+.set-options {
+    display: flex;
+    justify-content: center;
+    gap: 30px; /* Seçenekler arası boşluk */
+    flex-wrap: wrap; /* Ekran daraldığında alt alta geçme */
+}
+
+.set-options button {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px;
+    border: 2px solid #007bff; /* Ana renk kenarlık */
+    border-radius: 8px;
+    background-color: #fff;
+    cursor: pointer;
+    transition: background-color 0.2s, border-color 0.2s, transform 0.2s;
+    min-width: 150px; /* Butonlara minimum genişlik ver */
+    text-align: center;
+    font-size: 1rem;
+    color: #343a40;
+}
+
+.set-options button:hover {
+    background-color: #e9ecef; /* Hover rengi */
+    border-color: #0056b3; /* Hover kenarlık rengi */
+    transform: translateY(-3px); /* Hafif yukarı kayma efekti */
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+}
+
+.set-options button img {
+    margin-bottom: 10px; /* İkon ile yazı arası boşluk */
+    /* İkon boyutları index.html'deki width/height ile ayarlanır,
+       burada max değerler veya oranlar verilebilir */
+    max-width: 80px;
+    max-height: 80px;
+    object-fit: contain;
+}
+
+.set-options button p {
+    margin: 0;
+    font-weight: bold;
+}
+
+/* Oda Kontrolleri Alanı (Yeni Kapsayıcı Div) */
+#room-controls-area {
+    /* Başlangıçta JS ile display:none; olarak ayarlanacak */
+    margin-bottom: 20px;
+    padding: 15px;
+    background-color: #e9ecef;
+    border-radius: 5px;
+    border: 1px solid #ced4da;
+}
+
+/* Mevcut .room-controls stili bu divin içindeki elementlere uygulanır */
+/* Bu stil zaten daha önceki mesajlarda vardı, sadece kapsayıcı değişti */
+#room-controls-area .room-controls {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 15px; /* Bu marjini iç div'e taşıdık */
+    align-items: center;
+    justify-content: center;
+    padding: 0; /* Kapsayıcıda padding olduğu için burada 0 yapabiliriz */
+    background-color: transparent; /* Kapsayıcıda arkaplan olduğu için transparent */
+    border-radius: 0;
+}
+
+#room-controls-area .room-controls input[type="text"] {
+     padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    flex-grow: 1;
+    max-width: 300px;
+}
+
+#room-controls-area .room-controls button {
+    padding: 8px 15px;
+    cursor: pointer;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    transition: background-color 0.2s;
+}
+
+#room-controls-area .room-controls button:hover {
+    background-color: #0056b3;
+}
+
+/* Mevcut .current-room-display stili */
+#current-room-display {
+    text-align: center;
+    margin-bottom: 15px; /* Bu marjini kapsayıcıya taşıdık, JS'teki p elementine atanacak */
+    font-weight: bold;
+    color: #555;
+}
+
+/* Oda Bilgisi Metni (Yeni) */
+#room-info-text {
+    text-align: center;
+    font-size: 0.9em;
+    color: #6c757d;
+    min-height: 1.2em; /* Yer tutması için */
+}
+
+
+/* Kart Havuzu Başlığındaki Set Adı */
+#active-card-set-name {
+    color: #007bff; /* Veya belirgin bir renk */
+    font-weight: bold;
+}
+
+/* Kart Seti Seçilene Kadar Kart Havuzundaki Placeholder Metin */
+#select-set-prompt {
+    text-align: center;
+    width: 100%; /* Tam genişliği kapla */
+    color: #6c757d;
+    font-style: italic;
+    margin-top: 50px; /* Ortalamak için boşluk */
+}
+
+/* JS ile gösterilecek/gizlenecek elementlerin başlangıç durumu */
+/* Bunları JS ile yönettiğimiz için CSS'te display:none; vermek yerine
+   JS'in yüklenince ayarlamasını bekleyebiliriz. Ancak emin olmak için
+   başlangıçta gizli yapabiliriz, JS sonra gösterir. */
+/* #card-set-selection { display: none; } */
+/* #room-controls-area { display: none; } */
+
+/* Eğer kullanıcı giriş yapmamışsa gösterilecek alanları gizleyebiliriz */
+/* Bu daha çok JS mantığına bağlı, giriş yapma durumu yönetimi JS'te olacak */
+/* Örneğin: body:not(.logged-in) #card-set-selection,
+            body:not(.logged-in) #room-controls-area { display: none; } */

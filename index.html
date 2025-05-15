@@ -7,28 +7,67 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-
     <h1>Terapötik Kart Seçici</h1>
 
+    <!-- YENİ: GİRİŞ/KAYIT ALANI (FAZ 2'DE AKTİF OLACAK) -->
+    <div class="user-auth-controls">
+        <p>Giriş/Kayıt Alanı (Şimdilik pasif, Faz 2'de geliştirilecek)</p>
+        <!-- Giriş/Kayıt Formları veya Durum Mesajları Buraya Gelecek -->
+    </div>
+
+    <!-- YENİ: KART SETİ SEÇİM ALANI -->
+    <!-- Başlangıçta JS ile style.display yönetilecek -->
+    <div id="card-set-selection" class="card-set-selector">
+        <h2>Lütfen Bir Kart Seti Seçin:</h2>
+        <div class="set-options">
+            <!-- Personita Kartları Seçeneği -->
+            <button id="select-set-personita" data-setname="personita">
+                <img src="icons/personita-set-icon.svg" alt="Personita Kartları" width="60" height="60">
+                <p>Personita Kartları</p>
+            </button>
+            <!-- Siyah Beyaz Terapi Kartları Seçeneği -->
+            <button id="select-set-terapisb" data-setname="terapi_sb">
+                <img src="icons/therapy-sb-set-icon.svg" alt="Siyah Beyaz Terapi Kartları" width="60" height="60">
+                <p>Siyah Beyaz Terapi Kartları</p>
+            </button>
+        </div>
+    </div>
+
+    <!-- YENİ: ODA KONTROLLERİ ALANI -->
+    <!-- Başlangıçta JS ile style.display yönetilecek -->
+    <div id="room-controls-area">
+        <div class="room-controls">
+            <input type="text" id="room-id-input" placeholder="Oda ID Girin veya Oluşturun">
+            <button id="create-join-room-button">Oda Oluştur/Katıl</button>
+        </div>
+        <p id="current-room-display" class="current-room-display">Henüz bir odada değilsiniz.</p>
+        <p id="room-info-text" class="room-info-text"></p> <!-- Oda bilgisi veya hatalar için -->
+    </div>
+
+    <!-- MEVCUT KONTROLLER (RESET BUTONU) -->
     <div class="controls">
-        <p id="info-text">Lütfen en fazla 10 kart seçin. Seçilen Kartlar: <span id="selected-count">0</span>/10</p>
+        <p id="info-text">Seçilen Kartlar (Odada Toplam): <span id="selected-count">0</span>/10</p>
         <button id="reset-button">Seçimi Sıfırla</button>
     </div>
 
-    <h2>Kart Havuzu (Seçmek için tıklayın)</h2>
+    <h2>Kart Havuzu (<span id="active-card-set-name">Kart Seti Seçilmedi</span>)</h2> <!-- Aktif kart setinin adını göstereceğiz -->
+
     <div id="card-pool" class="card-container">
         <!-- Kartlar buraya JavaScript ile eklenecek -->
+        <p id="select-set-prompt">Lütfen başlamak için yukarıdan bir kart seti seçin.</p> <!-- JS ile gizlenecek -->
     </div>
 
+    <!-- MEVCUT SEÇİLEN KARTLAR ALANI -->
     <h2>Seçilen Kartlar</h2>
     <div id="selected-cards" class="card-container selected-area">
         <!-- Seçilen kartlar buraya JavaScript ile eklenecek -->
         <p id="no-selected-text">Henüz kart seçilmedi.</p>
     </div>
+
+    <!-- Socket.IO Client Kütüphanesi -->
     <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+    <!-- Kendi JavaScript Kodumuz -->
     <script src="script.js"></script>
-</body>
-</html>
-    <script src="script.js"></script>
+
 </body>
 </html>
