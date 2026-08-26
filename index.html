@@ -1,73 +1,100 @@
 <!DOCTYPE html>
 <html lang="tr">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Terapötik Kart Seçici</title>
-    <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Persona Card - online danışmanlıkta görsel ifade kolaylaştırıcı kart çalışma aracı">
+  <title>Persona Card</title>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <h1>Terapötik Kart Seçici</h1>
+  <main class="app-shell">
+    <header class="hero">
+      <div>
+        <p class="eyebrow">V1 · Online danışmanlık yardımcı aracı</p>
+        <h1>Persona Card</h1>
+        <p class="tagline">Kartlar cevap vermez; konuşmayı kolaylaştırır.</p>
+      </div>
+      <div id="connection-badge" class="badge badge-waiting">Bağlanıyor</div>
+    </header>
 
-    <!-- YENİ: GİRİŞ/KAYIT ALANI (FAZ 2'DE AKTİF OLACAK) -->
-    <div class="user-auth-controls">
-        <p>Giriş/Kayıt Alanı (Şimdilik pasif, Faz 2'de geliştirilecek)</p>
-        <!-- Giriş/Kayıt Formları veya Durum Mesajları Buraya Gelecek -->
-    </div>
-
-    <!-- YENİ: KART SETİ SEÇİM ALANI -->
-    <!-- Başlangıçta JS ile style.display yönetilecek -->
-    <div id="card-set-selection" class="card-set-selector">
-        <h2>Lütfen Bir Kart Seti Seçin:</h2>
-        <div class="set-options">
-            <!-- Personita Kartları Seçeneği -->
-            <button id="select-set-personita" data-setname="personita">
-                <img src="icons/personita-set-icon.svg" alt="Personita Kartları" width="60" height="60">
-                <p>Personita Kartları</p>
-            </button>
-            <!-- Siyah Beyaz Terapi Kartları Seçeneği -->
-            <button id="select-set-terapisb" data-setname="terapi_sb">
-                <img src="icons/therapy-sb-set-icon.svg" alt="Siyah Beyaz Terapi Kartları" width="60" height="60">
-                <p>Siyah Beyaz Terapi Kartları</p>
-            </button>
+    <section id="advisor-start" class="panel">
+      <div class="panel-heading">
+        <div>
+          <p class="section-kicker">Danışman</p>
+          <h2>Kart çalışması başlat</h2>
         </div>
-    </div>
+      </div>
 
-    <!-- YENİ: ODA KONTROLLERİ ALANI -->
-    <!-- Başlangıçta JS ile style.display yönetilecek -->
-    <div id="room-controls-area">
-        <div class="room-controls">
-            <input type="text" id="room-id-input" placeholder="Oda ID Girin veya Oluşturun">
-            <button id="create-join-room-button">Oda Oluştur/Katıl</button>
+      <p class="muted">Seansın ihtiyaç duyduğunuz anında bir kart seti seçin. Danışan bağlantıdan katılır ve kartları kendi çağrışımına göre seçer.</p>
+
+      <div class="set-grid" id="card-set-selection">
+        <button class="set-card" data-set="personita" type="button">
+          <img src="icons/personita-set-icon.svg" alt="" aria-hidden="true">
+          <span>Personita Kartları</span>
+          <small>77 görsel kart</small>
+        </button>
+        <button class="set-card" data-set="terapi_sb" type="button">
+          <img src="icons/therapy-sb-set-icon.svg" alt="" aria-hidden="true">
+          <span>Siyah Beyaz Kartlar</span>
+          <small>44 görsel kart</small>
+        </button>
+      </div>
+
+      <button id="create-session" class="primary-button" type="button" disabled>Oturum Oluştur</button>
+    </section>
+
+    <section id="client-joining" class="panel hidden">
+      <p class="section-kicker">Danışan</p>
+      <h2>Kart çalışmasına katılıyorsunuz</h2>
+      <p id="client-joining-text" class="muted">Oturum doğrulanıyor...</p>
+    </section>
+
+    <section id="session-panel" class="panel hidden">
+      <div class="session-topline">
+        <div>
+          <p id="role-label" class="section-kicker"></p>
+          <h2 id="session-title">Kart çalışması</h2>
+          <p id="session-status" class="muted"></p>
         </div>
-        <p id="current-room-display" class="current-room-display">Henüz bir odada değilsiniz.</p>
-        <p id="room-info-text" class="room-info-text"></p> <!-- Oda bilgisi veya hatalar için -->
-    </div>
+        <span id="room-code" class="room-code"></span>
+      </div>
 
-    <!-- MEVCUT KONTROLLER (RESET BUTONU) -->
-    <div class="controls">
-        <p id="info-text">Seçilen Kartlar (Odada Toplam): <span id="selected-count">0</span>/10</p>
-        <button id="reset-button">Seçimi Sıfırla</button>
-    </div>
+      <div id="advisor-tools" class="advisor-tools hidden">
+        <label for="invite-link">Danışan bağlantısı</label>
+        <div class="invite-row">
+          <input id="invite-link" type="text" readonly>
+          <button id="copy-link" class="secondary-button" type="button">Bağlantıyı Kopyala</button>
+        </div>
+        <div class="action-row">
+          <button id="reset-selection" class="secondary-button" type="button">Seçimleri Sıfırla</button>
+          <button id="close-session" class="danger-button" type="button">Oturumu Kapat</button>
+        </div>
+      </div>
 
-    <h2>Kart Havuzu (<span id="active-card-set-name">Kart Seti Seçilmedi</span>)</h2> <!-- Aktif kart setinin adını göstereceğiz -->
+      <div class="workspace-heading">
+        <div>
+          <h3 id="active-set-name">Kartlar</h3>
+          <p id="workspace-instruction" class="muted"></p>
+        </div>
+        <div class="selection-counter"><span id="selected-count">0</span>/10 seçildi</div>
+      </div>
 
-    <div id="card-pool" class="card-container">
-        <!-- Kartlar buraya JavaScript ile eklenecek -->
-        <p id="select-set-prompt">Lütfen başlamak için yukarıdan bir kart seti seçin.</p> <!-- JS ile gizlenecek -->
-    </div>
+      <div id="card-pool" class="card-grid" aria-live="polite"></div>
 
-    <!-- MEVCUT SEÇİLEN KARTLAR ALANI -->
-    <h2>Seçilen Kartlar</h2>
-    <div id="selected-cards" class="card-container selected-area">
-        <!-- Seçilen kartlar buraya JavaScript ile eklenecek -->
-        <p id="no-selected-text">Henüz kart seçilmedi.</p>
-    </div>
+      <div class="selected-section">
+        <h3>Seçilen kartlar</h3>
+        <p class="muted">Seçim sırası korunur. Sistem kartlara herhangi bir anlam veya yorum yüklemez.</p>
+        <div id="selected-cards" class="selected-grid">
+          <p id="empty-selection" class="empty-state">Henüz kart seçilmedi.</p>
+        </div>
+      </div>
+    </section>
 
-   <!-- Socket.IO Client Kütüphanesi -->
-<script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
-<!-- Kendi JavaScript Kodumuz -->
-<script src="script.js"></script>
+    <div id="toast" class="toast hidden" role="status" aria-live="polite"></div>
+  </main>
 
+  <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+  <script src="script.js"></script>
 </body>
 </html>
