@@ -1,367 +1,264 @@
-/* style.css dosyasının güncellenmiş hali */
+:root {
+  --bg: #f4f1ec;
+  --surface: #ffffff;
+  --surface-soft: #faf8f5;
+  --text: #25231f;
+  --muted: #6d6860;
+  --border: #ded8cf;
+  --accent: #4d675d;
+  --accent-dark: #334a42;
+  --danger: #9d3f3f;
+  --shadow: 0 12px 36px rgba(45, 39, 31, 0.08);
+}
+
+* { box-sizing: border-box; }
 
 body {
-    font-family: sans-serif;
-    margin: 20px;
-    background-color: #f4f4f4;
+  margin: 0;
+  min-height: 100vh;
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  background: var(--bg);
+  color: var(--text);
 }
 
-h1, h2 {
-    color: #333;
-    text-align: center;
-    margin-bottom: 20px;
+button, input { font: inherit; }
+button { -webkit-tap-highlight-color: transparent; }
+
+.app-shell {
+  width: min(1180px, calc(100% - 28px));
+  margin: 0 auto;
+  padding: 28px 0 56px;
 }
 
-.controls {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 20px;
-    padding: 10px;
-    background-color: #eee;
-    border-radius: 5px;
+.hero {
+  display: flex;
+  justify-content: space-between;
+  gap: 24px;
+  align-items: flex-start;
+  margin-bottom: 24px;
 }
 
-#info-text {
-    margin: 0;
-    font-weight: bold;
+h1, h2, h3, p { margin-top: 0; }
+h1 { margin-bottom: 6px; font-size: clamp(2rem, 5vw, 3.2rem); letter-spacing: -0.04em; }
+h2 { margin-bottom: 10px; font-size: clamp(1.35rem, 3vw, 1.8rem); }
+h3 { margin-bottom: 8px; }
+
+.eyebrow, .section-kicker {
+  margin-bottom: 7px;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  font-size: 0.74rem;
+  font-weight: 800;
+  color: var(--accent);
 }
 
-#reset-button {
-    padding: 8px 15px;
-    cursor: pointer;
-    background-color: #dc3545;
-    color: white;
-    border: none;
-    border-radius: 4px;
-    transition: background-color 0.2s;
+.tagline, .muted { color: var(--muted); }
+.tagline { margin-bottom: 0; font-size: 1.05rem; }
+.muted { line-height: 1.55; }
+
+.panel {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: clamp(18px, 3vw, 30px);
+  box-shadow: var(--shadow);
+  margin-bottom: 22px;
 }
 
-#reset-button:hover {
-    background-color: #c82333;
+.hidden { display: none !important; }
+
+.badge {
+  border-radius: 999px;
+  padding: 8px 12px;
+  font-size: 0.8rem;
+  font-weight: 800;
+  white-space: nowrap;
+}
+.badge-waiting { background: #ece7df; color: #675f55; }
+.badge-online { background: #dfeae4; color: #345247; }
+.badge-offline { background: #f1dddd; color: #7b3737; }
+
+.set-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+  margin: 24px 0;
 }
 
-.card-container {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 15px;
-    padding: 15px;
-    background-color: #fff;
-    border-radius: 5px;
-    min-height: 150px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    margin-bottom: 30px;
-    justify-content: center;
-    /* Kartlar büyüdüğünde taşmayı önlemek için biraz daha fazla boşluk bırakabiliriz */
-    padding-bottom: 30px;
+.set-card {
+  display: grid;
+  grid-template-columns: 54px 1fr;
+  grid-template-rows: auto auto;
+  column-gap: 14px;
+  align-items: center;
+  text-align: left;
+  padding: 17px;
+  border: 2px solid var(--border);
+  border-radius: 16px;
+  background: var(--surface-soft);
+  color: var(--text);
+  cursor: pointer;
+  transition: border-color .18s ease, transform .18s ease, box-shadow .18s ease;
 }
 
-.selected-area {
-    background-color: #e9ecef;
-    min-height: 180px;
+.set-card:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(45, 39, 31, .07); }
+.set-card.selected { border-color: var(--accent); background: #f0f5f2; }
+.set-card img { width: 54px; height: 54px; object-fit: contain; grid-row: 1 / 3; }
+.set-card span { font-weight: 800; }
+.set-card small { color: var(--muted); margin-top: 3px; }
+
+.primary-button, .secondary-button, .danger-button {
+  border: 0;
+  border-radius: 12px;
+  padding: 11px 16px;
+  font-weight: 800;
+  cursor: pointer;
+}
+.primary-button { background: var(--accent); color: white; }
+.primary-button:hover { background: var(--accent-dark); }
+.primary-button:disabled { opacity: .42; cursor: not-allowed; }
+.secondary-button { background: #ebe7e1; color: var(--text); }
+.danger-button { background: #f1dddd; color: var(--danger); }
+
+.session-topline, .workspace-heading, .invite-row, .action-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
 }
 
-#no-selected-text {
-    color: #6c757d;
-    font-style: italic;
-    width: 100%;
-    text-align: center;
+.room-code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-weight: 900;
+  padding: 9px 12px;
+  border-radius: 10px;
+  background: var(--surface-soft);
+  border: 1px solid var(--border);
+}
+
+.advisor-tools {
+  margin: 22px 0 26px;
+  padding: 18px;
+  border-radius: 16px;
+  background: var(--surface-soft);
+  border: 1px solid var(--border);
+}
+.advisor-tools label { display: block; margin-bottom: 8px; font-size: .85rem; font-weight: 800; }
+.invite-row { align-items: stretch; }
+.invite-row input {
+  flex: 1;
+  min-width: 0;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 10px 12px;
+  background: white;
+}
+.action-row { justify-content: flex-end; margin-top: 12px; }
+
+.workspace-heading { margin: 24px 0 14px; align-items: flex-end; }
+.selection-counter {
+  padding: 8px 11px;
+  border-radius: 10px;
+  background: #ebe7e1;
+  font-size: .85rem;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.card-grid, .selected-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(108px, 1fr));
+  gap: 12px;
 }
 
 .card {
-    width: 100px;
-    height: 150px;
-    border: 1px solid #ccc;
-    background-color: #f8f9fa;
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-start;
-    align-items: center;
-    cursor: pointer;
-    overflow: hidden;
-    position: relative; /* z-index'in çalışması için gerekli */
-    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-    border-radius: 4px;
-    z-index: 1; /* Normalde diğerlerinin altında kalmayacak */
-    /* Geçiş efektini ekliyoruz (transform için) */
-    transition: transform 0.3s ease, box-shadow 0.3s ease, z-index 0s 0.3s; /* z-index gecikmeli değişsin */
-    transform-origin: center center; /* Büyüme merkezden olsun */
+  position: relative;
+  min-width: 0;
+  border: 2px solid transparent;
+  border-radius: 14px;
+  overflow: hidden;
+  background: #f1eee9;
+  aspect-ratio: 2 / 3;
+  padding: 0;
+  cursor: pointer;
+  box-shadow: 0 3px 12px rgba(45, 39, 31, .06);
+  transition: transform .15s ease, border-color .15s ease, opacity .15s ease;
 }
-
-/* === YENİ veya GÜNCELLENMİŞ KISIM === */
-.card:not(.disabled):hover { /* Sadece pasif olmayan kartlarda çalışsın */
-    transform: scale(2.5); /* Kartı 2.5 kat büyüt (3 çok fazla olabilir, bunu deneyin) */
-    box-shadow: 0 8px 16px rgba(0,0,0,0.3); /* Büyüyünce gölge artsın */
-    z-index: 10; /* Diğer kartların üzerine çıksın */
-    transition: transform 0.3s ease, box-shadow 0.3s ease, z-index 0s 0s; /* Hover anında z-index değişsin */
-}
-/* === SON === */
-
-
-.card.disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-    background-color: #e9ecef;
-}
-
-/* Pasif kartın hover'ı (Büyümemeli) */
-.card.disabled:hover {
-    transform: none; /* Ölçekleme olmasın */
-    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-    z-index: 1; /* Üste çıkmasın */
-}
-
-.card img {
-    max-width: 100%;
-    max-height: 120px;
-    object-fit: contain;
-    margin-top: 5px;
-}
-
+.card:hover { transform: translateY(-2px); }
+.card img { width: 100%; height: 100%; display: block; object-fit: cover; }
 .card .card-number {
-    font-size: 12px;
-    font-weight: bold;
-    color: #333;
-    padding: 3px 0;
-    text-align: center;
-    width: 100%;
-    background-color: rgba(255, 255, 255, 0.7);
+  position: absolute;
+  top: 7px;
+  left: 7px;
+  min-width: 25px;
+  height: 25px;
+  display: grid;
+  place-items: center;
+  padding: 0 6px;
+  border-radius: 999px;
+  background: rgba(255,255,255,.88);
+  color: #28251f;
+  font-size: .75rem;
+  font-weight: 900;
+}
+.card.selected { border-color: var(--accent); opacity: .58; }
+.card.readonly { cursor: default; }
+.card.readonly:hover { transform: none; }
+
+.selected-section {
+  margin-top: 28px;
+  padding-top: 22px;
+  border-top: 1px solid var(--border);
+}
+.selected-grid { grid-template-columns: repeat(auto-fill, minmax(120px, 160px)); }
+.selected-card { position: relative; }
+.selected-card .selection-order {
+  position: absolute;
+  right: 7px;
+  top: 7px;
+  background: var(--accent);
+  color: white;
+  border-radius: 999px;
+  padding: 5px 8px;
+  font-size: .72rem;
+  font-weight: 900;
+}
+.selected-card.client-editable { cursor: pointer; }
+.empty-state {
+  grid-column: 1 / -1;
+  padding: 28px;
+  text-align: center;
+  border: 1px dashed var(--border);
+  border-radius: 14px;
+  color: var(--muted);
 }
 
-/* Seçilmiş alandaki kartlar (Büyümemeli) */
-.selected-area .card {
-    width: 110px;
-    height: 165px;
-    cursor: default;
-    border-color: #adb5bd;
-}
-.selected-area .card:hover {
-    transform: none; /* Ölçekleme olmasın */
-    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-    z-index: 1; /* Üste çıkmasın */
-}
-
-.selected-area .card img {
-     max-height: 135px;
-}
-/* style.css sonuna eklenecekler */
-.room-controls {
-    display: flex;
-    gap: 10px;
-    margin-bottom: 15px;
-    align-items: center;
-    justify-content: center; /* Ortalamak için */
-    padding: 10px;
-    background-color: #f0f0f0;
-    border-radius: 5px;
+.toast {
+  position: fixed;
+  left: 50%;
+  bottom: 24px;
+  transform: translateX(-50%);
+  z-index: 50;
+  max-width: min(560px, calc(100% - 32px));
+  padding: 11px 15px;
+  border-radius: 12px;
+  background: #27241f;
+  color: white;
+  box-shadow: var(--shadow);
+  font-weight: 700;
 }
 
-.room-controls input[type="text"] {
-    padding: 8px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    flex-grow: 1; /* Alanı doldursun */
-    max-width: 300px; /* Çok genişlemesin */
+@media (max-width: 720px) {
+  .app-shell { width: min(100% - 18px, 1180px); padding-top: 18px; }
+  .hero { align-items: center; }
+  .set-grid { grid-template-columns: 1fr; }
+  .session-topline, .workspace-heading { align-items: flex-start; }
+  .invite-row, .action-row { flex-direction: column; align-items: stretch; }
+  .card-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+  .selected-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 
-.room-controls button {
-    padding: 8px 15px;
-    cursor: pointer;
-    background-color: #007bff;
-    color: white;
-    border: none;
-    border-radius: 4px;
-    transition: background-color 0.2s;
+@media (max-width: 420px) {
+  .hero { flex-direction: column; }
+  .card-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
-
-.room-controls button:hover {
-    background-color: #0056b3;
-}
-
-.current-room-display {
-    text-align: center;
-    margin-bottom: 20px;
-    font-weight: bold;
-    color: #555;
-}
-
-/* Kart havuzundaki kartlar için yeni stiller */
-.card.disabled-in-pool {
-    opacity: 0.4;
-    cursor: not-allowed;
-    border-color: #ff7675; /* Başkası tarafından seçilenin kenarlığı */
-}
-
-.card.disabled-in-pool:hover {
-    transform: none; /* Büyümesin */
-}
-
-.card.selected-by-me {
-    border-color: #55efc4; /* Benim tarafımdan seçilenin kenarlığı */
-    /* opacity: 0.7; İsteğe bağlı: hafif transparan */
-}
-/* style.css dosyasının sonuna eklenecekler */
-
-/* Kullanıcı Giriş/Kayıt Alanı (Placeholder) */
-.user-auth-controls {
-    text-align: center;
-    margin-bottom: 20px;
-    padding: 15px;
-    background-color: #e9ecef;
-    border-radius: 5px;
-    border: 1px solid #ced4da;
-    color: #495057;
-}
-
-.user-auth-controls p {
-    margin: 0;
-    font-style: italic;
-}
-
-/* Kart Seti Seçim Alanı */
-.card-set-selector {
-    text-align: center;
-    margin-bottom: 30px;
-    padding: 20px;
-    background-color: #f8f9fa;
-    border-radius: 8px;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-}
-
-.card-set-selector h2 {
-    margin-top: 0;
-    color: #007bff; /* Veya ana renk paletinize uygun bir renk */
-}
-
-.set-options {
-    display: flex;
-    justify-content: center;
-    gap: 30px; /* Seçenekler arası boşluk */
-    flex-wrap: wrap; /* Ekran daraldığında alt alta geçme */
-}
-
-.set-options button {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding: 20px;
-    border: 2px solid #007bff; /* Ana renk kenarlık */
-    border-radius: 8px;
-    background-color: #fff;
-    cursor: pointer;
-    transition: background-color 0.2s, border-color 0.2s, transform 0.2s;
-    min-width: 150px; /* Butonlara minimum genişlik ver */
-    text-align: center;
-    font-size: 1rem;
-    color: #343a40;
-}
-
-.set-options button:hover {
-    background-color: #e9ecef; /* Hover rengi */
-    border-color: #0056b3; /* Hover kenarlık rengi */
-    transform: translateY(-3px); /* Hafif yukarı kayma efekti */
-    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
-}
-
-.set-options button img {
-    margin-bottom: 10px; /* İkon ile yazı arası boşluk */
-    /* İkon boyutları index.html'deki width/height ile ayarlanır,
-       burada max değerler veya oranlar verilebilir */
-    max-width: 80px;
-    max-height: 80px;
-    object-fit: contain;
-}
-
-.set-options button p {
-    margin: 0;
-    font-weight: bold;
-}
-
-/* Oda Kontrolleri Alanı (Yeni Kapsayıcı Div) */
-#room-controls-area {
-    /* Başlangıçta JS ile display:none; olarak ayarlanacak */
-    margin-bottom: 20px;
-    padding: 15px;
-    background-color: #e9ecef;
-    border-radius: 5px;
-    border: 1px solid #ced4da;
-}
-
-/* Mevcut .room-controls stili bu divin içindeki elementlere uygulanır */
-/* Bu stil zaten daha önceki mesajlarda vardı, sadece kapsayıcı değişti */
-#room-controls-area .room-controls {
-    display: flex;
-    gap: 10px;
-    margin-bottom: 15px; /* Bu marjini iç div'e taşıdık */
-    align-items: center;
-    justify-content: center;
-    padding: 0; /* Kapsayıcıda padding olduğu için burada 0 yapabiliriz */
-    background-color: transparent; /* Kapsayıcıda arkaplan olduğu için transparent */
-    border-radius: 0;
-}
-
-#room-controls-area .room-controls input[type="text"] {
-     padding: 8px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    flex-grow: 1;
-    max-width: 300px;
-}
-
-#room-controls-area .room-controls button {
-    padding: 8px 15px;
-    cursor: pointer;
-    background-color: #007bff;
-    color: white;
-    border: none;
-    border-radius: 4px;
-    transition: background-color 0.2s;
-}
-
-#room-controls-area .room-controls button:hover {
-    background-color: #0056b3;
-}
-
-/* Mevcut .current-room-display stili */
-#current-room-display {
-    text-align: center;
-    margin-bottom: 15px; /* Bu marjini kapsayıcıya taşıdık, JS'teki p elementine atanacak */
-    font-weight: bold;
-    color: #555;
-}
-
-/* Oda Bilgisi Metni (Yeni) */
-#room-info-text {
-    text-align: center;
-    font-size: 0.9em;
-    color: #6c757d;
-    min-height: 1.2em; /* Yer tutması için */
-}
-
-
-/* Kart Havuzu Başlığındaki Set Adı */
-#active-card-set-name {
-    color: #007bff; /* Veya belirgin bir renk */
-    font-weight: bold;
-}
-
-/* Kart Seti Seçilene Kadar Kart Havuzundaki Placeholder Metin */
-#select-set-prompt {
-    text-align: center;
-    width: 100%; /* Tam genişliği kapla */
-    color: #6c757d;
-    font-style: italic;
-    margin-top: 50px; /* Ortalamak için boşluk */
-}
-
-/* JS ile gösterilecek/gizlenecek elementlerin başlangıç durumu */
-/* Bunları JS ile yönettiğimiz için CSS'te display:none; vermek yerine
-   JS'in yüklenince ayarlamasını bekleyebiliriz. Ancak emin olmak için
-   başlangıçta gizli yapabiliriz, JS sonra gösterir. */
-/* #card-set-selection { display: none; } */
-/* #room-controls-area { display: none; } */
-
-/* Eğer kullanıcı giriş yapmamışsa gösterilecek alanları gizleyebiliriz */
-/* Bu daha çok JS mantığına bağlı, giriş yapma durumu yönetimi JS'te olacak */
-/* Örneğin: body:not(.logged-in) #card-set-selection,
-            body:not(.logged-in) #room-controls-area { display: none; } */
