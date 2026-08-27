@@ -8,6 +8,8 @@ const SHELL_ASSETS = [
   '/script.js',
   '/manifest.webmanifest',
   '/icons/persona-card-icon.svg',
+  '/icons/persona-card-192.png',
+  '/icons/persona-card-512.png',
   '/icons/personita-set-icon.svg',
   '/icons/therapy-sb-set-icon.svg',
   SOCKET_IO_URL
