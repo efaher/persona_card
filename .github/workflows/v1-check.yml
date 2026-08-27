@@ -1,8 +1,8 @@
-name: Persona Card V1 Checks
+name: Persona Card Frontend Checks
 
 on:
   push:
-    branches: [v1-commercial-foundation]
+    branches: [v1.1-advisor-accounts]
   pull_request:
     branches: [main]
 
