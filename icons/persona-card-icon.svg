@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Persona Card">
+  <rect width="512" height="512" rx="112" fill="#4d675d"/>
+  <rect x="112" y="82" width="220" height="316" rx="28" fill="#f4f1ec" transform="rotate(-8 222 240)"/>
+  <rect x="184" y="114" width="220" height="316" rx="28" fill="#ffffff" transform="rotate(8 294 272)"/>
+  <circle cx="298" cy="214" r="54" fill="#dfe9e4"/>
+  <path d="M236 330c22-52 62-80 116-84 13 34 17 72 10 114H230c0-10 2-20 6-30z" fill="#4d675d"/>
+</svg>
