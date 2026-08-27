@@ -1,5 +1,6 @@
 const SHELL_CACHE = 'persona-card-shell-v1.2';
 const CARD_CACHE = 'persona-card-cards-v1.2';
+const SOCKET_IO_URL = 'https://cdn.socket.io/4.7.2/socket.io.min.js';
 const SHELL_ASSETS = [
   '/',
   '/index.html',
@@ -8,7 +9,8 @@ const SHELL_ASSETS = [
   '/manifest.webmanifest',
   '/icons/persona-card-icon.svg',
   '/icons/personita-set-icon.svg',
-  '/icons/therapy-sb-set-icon.svg'
+  '/icons/therapy-sb-set-icon.svg',
+  SOCKET_IO_URL
 ];
 
 self.addEventListener('install', (event) => {
@@ -32,7 +34,8 @@ self.addEventListener('activate', (event) => {
 });
 
 function isCardImage(url) {
-  return url.pathname.startsWith('/images/personita/') || url.pathname.startsWith('/images/terapi_sb/');
+  return url.origin === self.location.origin
+    && (url.pathname.startsWith('/images/personita/') || url.pathname.startsWith('/images/terapi_sb/'));
 }
 
 self.addEventListener('fetch', (event) => {
@@ -40,6 +43,18 @@ self.addEventListener('fetch', (event) => {
   if (request.method !== 'GET') return;
 
   const url = new URL(request.url);
+
+  if (request.url === SOCKET_IO_URL) {
+    event.respondWith(
+      caches.match(request)
+        .then((cached) => cached || fetch(request).then((response) => {
+          caches.open(SHELL_CACHE).then((cache) => cache.put(request, response.clone()));
+          return response;
+        }))
+    );
+    return;
+  }
+
   if (url.origin !== self.location.origin) return;
 
   if (isCardImage(url)) {
