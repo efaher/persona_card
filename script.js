@@ -2,25 +2,35 @@ document.addEventListener('DOMContentLoaded', () => {
   const BACKEND_URL = 'https://terapikart.onrender.com';
   const MAX_SELECTED_CARDS = 10;
   const ADVISOR_SESSION_KEY = 'persona-card-advisor-session';
+  const AUTH_TOKEN_KEY = 'persona-card-auth-token';
 
   const cardSets = {
-    personita: {
-      name: 'Personita Kartları',
-      total: 77,
-      folder: 'images/personita',
-      extension: '.jpg'
-    },
-    terapi_sb: {
-      name: 'Siyah Beyaz Kartlar',
-      total: 44,
-      folder: 'images/terapi_sb',
-      extension: '.jpg'
-    }
+    personita: { name: 'Personita Kartları', total: 77, folder: 'images/personita', extension: '.jpg' },
+    terapi_sb: { name: 'Siyah Beyaz Kartlar', total: 44, folder: 'images/terapi_sb', extension: '.jpg' }
   };
 
   const elements = {
     connectionBadge: document.getElementById('connection-badge'),
+    authPanel: document.getElementById('auth-panel'),
+    showLogin: document.getElementById('show-login'),
+    showRegister: document.getElementById('show-register'),
+    loginForm: document.getElementById('login-form'),
+    registerForm: document.getElementById('register-form'),
+    loginEmail: document.getElementById('login-email'),
+    loginPassword: document.getElementById('login-password'),
+    registerName: document.getElementById('register-name'),
+    registerEmail: document.getElementById('register-email'),
+    registerPassword: document.getElementById('register-password'),
+    authMessage: document.getElementById('auth-message'),
     advisorStart: document.getElementById('advisor-start'),
+    advisorName: document.getElementById('advisor-name'),
+    accountStatus: document.getElementById('account-status'),
+    logoutButton: document.getElementById('logout-button'),
+    trialCard: document.getElementById('trial-card'),
+    trialTitle: document.getElementById('trial-title'),
+    trialDescription: document.getElementById('trial-description'),
+    trialCount: document.getElementById('trial-count'),
+    licenseMessage: document.getElementById('license-message'),
     setButtons: Array.from(document.querySelectorAll('.set-card')),
     createSession: document.getElementById('create-session'),
     clientJoining: document.getElementById('client-joining'),
@@ -40,14 +50,10 @@ document.addEventListener('DOMContentLoaded', () => {
     selectedCount: document.getElementById('selected-count'),
     cardPool: document.getElementById('card-pool'),
     selectedCards: document.getElementById('selected-cards'),
-    emptySelection: document.getElementById('empty-selection'),
     toast: document.getElementById('toast')
   };
 
-  const socket = io(BACKEND_URL, {
-    transports: ['websocket', 'polling']
-  });
-
+  const socket = io(BACKEND_URL, { transports: ['websocket', 'polling'] });
   const urlParams = new URLSearchParams(window.location.search);
   const inviteRoomID = urlParams.get('room');
   const inviteToken = urlParams.get('token');
@@ -63,14 +69,11 @@ document.addEventListener('DOMContentLoaded', () => {
   let advisorConnected = false;
   let clientConnected = false;
   let toastTimer = null;
+  let authToken = localStorage.getItem(AUTH_TOKEN_KEY);
+  let advisor = null;
 
-  function show(element) {
-    element?.classList.remove('hidden');
-  }
-
-  function hide(element) {
-    element?.classList.add('hidden');
-  }
+  const show = (element) => element?.classList.remove('hidden');
+  const hide = (element) => element?.classList.add('hidden');
 
   function showToast(message) {
     if (!elements.toast) return;
@@ -81,7 +84,6 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function setConnectionBadge(status) {
-    if (!elements.connectionBadge) return;
     elements.connectionBadge.className = 'badge';
     if (status === 'online') {
       elements.connectionBadge.classList.add('badge-online');
@@ -95,13 +97,73 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
+  async function api(path, options = {}) {
+    const headers = { 'Content-Type': 'application/json', ...(options.headers || {}) };
+    if (authToken) headers.Authorization = `Bearer ${authToken}`;
+    const response = await fetch(`${BACKEND_URL}${path}`, { ...options, headers });
+    let data = {};
+    try { data = await response.json(); } catch { data = {}; }
+    if (!response.ok) {
+      const error = new Error(data.message || 'İşlem tamamlanamadı.');
+      error.code = data.code;
+      throw error;
+    }
+    return data;
+  }
+
+  function setAuthMode(mode) {
+    const login = mode === 'login';
+    elements.showLogin.classList.toggle('active', login);
+    elements.showRegister.classList.toggle('active', !login);
+    elements.loginForm.classList.toggle('hidden', !login);
+    elements.registerForm.classList.toggle('hidden', login);
+    elements.authMessage.textContent = '';
+  }
+
+  function saveAuth(data) {
+    authToken = data.token;
+    advisor = data.advisor;
+    localStorage.setItem(AUTH_TOKEN_KEY, authToken);
+  }
+
+  function clearAuth() {
+    authToken = null;
+    advisor = null;
+    localStorage.removeItem(AUTH_TOKEN_KEY);
+    sessionStorage.removeItem(ADVISOR_SESSION_KEY);
+  }
+
+  function paidPlanActive(currentAdvisor) {
+    return ['founder', 'lifetime'].includes(currentAdvisor?.plan)
+      || (currentAdvisor?.plan === 'annual' && currentAdvisor?.licenseUntil && new Date(currentAdvisor.licenseUntil).getTime() > Date.now());
+  }
+
+  function updateAdvisorUi() {
+    if (!advisor) return;
+    elements.advisorName.textContent = `${advisor.displayName}, kart çalışması başlatın`;
+    elements.accountStatus.textContent = advisor.email;
+    elements.licenseMessage.textContent = '';
+
+    if (paidPlanActive(advisor)) {
+      elements.trialTitle.textContent = advisor.plan === 'founder' ? 'Kurucu Kullanıcı Lisansı' : 'Persona Card Lisansı';
+      elements.trialDescription.textContent = advisor.plan === 'annual' && advisor.licenseUntil
+        ? `Lisans geçerlilik tarihi: ${new Date(advisor.licenseUntil).toLocaleDateString('tr-TR')}`
+        : 'Lisansınız aktif. Kart çalışması kullanım sınırı bulunmuyor.';
+      elements.trialCount.textContent = '✓';
+      return;
+    }
+
+    const remaining = Number(advisor.trialSessionsRemaining || 0);
+    elements.trialTitle.textContent = remaining > 0 ? 'Ücretsiz deneme' : 'Ücretsiz kullanım tamamlandı';
+    elements.trialDescription.textContent = remaining > 0
+      ? 'Her yeni kart çalışması bir kullanım hakkı tüketir.'
+      : 'Yeni kart çalışması oluşturmak için Persona Card lisansının etkinleştirilmesi gerekir.';
+    elements.trialCount.textContent = String(remaining);
+  }
+
   function saveAdvisorSession() {
     if (!roomID || !advisorToken) return;
     sessionStorage.setItem(ADVISOR_SESSION_KEY, JSON.stringify({ roomID, token: advisorToken }));
-  }
-
-  function clearAdvisorSession() {
-    sessionStorage.removeItem(ADVISOR_SESSION_KEY);
   }
 
   function getSavedAdvisorSession() {
@@ -109,7 +171,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const raw = sessionStorage.getItem(ADVISOR_SESSION_KEY);
       return raw ? JSON.parse(raw) : null;
     } catch {
-      clearAdvisorSession();
+      sessionStorage.removeItem(ADVISOR_SESSION_KEY);
       return null;
     }
   }
@@ -135,18 +197,46 @@ document.addEventListener('DOMContentLoaded', () => {
     clientConnected = false;
   }
 
-  function showAdvisorStart() {
+  function showAuthPanel() {
     resetLocalSession();
+    hide(elements.advisorStart);
     hide(elements.clientJoining);
     hide(elements.sessionPanel);
+    show(elements.authPanel);
+  }
+
+  function showAdvisorStart() {
+    resetLocalSession();
+    hide(elements.authPanel);
+    hide(elements.clientJoining);
+    hide(elements.sessionPanel);
+    if (!advisor) return showAuthPanel();
+    updateAdvisorUi();
     show(elements.advisorStart);
+    elements.createSession.disabled = !selectedSetKey || !socket.connected || (!paidPlanActive(advisor) && advisor.trialSessionsRemaining <= 0);
   }
 
   function showClientJoining(message = 'Oturum doğrulanıyor...') {
+    hide(elements.authPanel);
     hide(elements.advisorStart);
     hide(elements.sessionPanel);
     show(elements.clientJoining);
-    if (elements.clientJoiningText) elements.clientJoiningText.textContent = message;
+    elements.clientJoiningText.textContent = message;
+  }
+
+  async function restoreAdvisorAccount() {
+    if (!authToken) {
+      advisor = null;
+      return false;
+    }
+    try {
+      const data = await api('/api/me');
+      advisor = data.advisor;
+      return true;
+    } catch {
+      clearAuth();
+      return false;
+    }
   }
 
   function applyRoomState(data) {
@@ -161,7 +251,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function renderSession() {
     if (!roomID || !role || !cardSets[activeSetKey]) return;
-
+    hide(elements.authPanel);
     hide(elements.advisorStart);
     hide(elements.clientJoining);
     show(elements.sessionPanel);
@@ -177,15 +267,11 @@ document.addEventListener('DOMContentLoaded', () => {
       show(elements.advisorTools);
       elements.inviteLink.value = buildClientInviteLink();
       elements.workspaceInstruction.textContent = 'Danışanın seçtiği kartlar ekranınızda eş zamanlı görünür. Kartlara sistem tarafından anlam yüklenmez.';
-      elements.sessionStatus.textContent = clientConnected
-        ? 'Danışan oturuma bağlı.'
-        : 'Danışanın bağlantıdan katılması bekleniyor.';
+      elements.sessionStatus.textContent = clientConnected ? 'Danışan oturuma bağlı.' : 'Danışanın bağlantıdan katılması bekleniyor.';
     } else {
       hide(elements.advisorTools);
       elements.workspaceInstruction.textContent = `Size yakın gelen kartları seçebilirsiniz. En fazla ${MAX_SELECTED_CARDS} kart seçilebilir; seçimlerinizi tekrar tıklayarak kaldırabilirsiniz.`;
-      elements.sessionStatus.textContent = advisorConnected
-        ? 'Danışman oturuma bağlı.'
-        : 'Danışmanın yeniden bağlanması bekleniyor.';
+      elements.sessionStatus.textContent = advisorConnected ? 'Danışman oturuma bağlı.' : 'Danışmanın yeniden bağlanması bekleniyor.';
     }
 
     renderCardPool();
@@ -207,20 +293,18 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function renderCardPool() {
     const activeSet = cardSets[activeSetKey];
-    if (!activeSet || !elements.cardPool) return;
-
+    if (!activeSet) return;
     const selectedMap = selectedCardMap();
     elements.cardPool.innerHTML = '';
 
     for (let cardId = 1; cardId <= activeSet.total; cardId += 1) {
-      const cardIdString = String(cardId);
-      const isSelected = selectedMap.has(cardIdString);
+      const id = String(cardId);
+      const isSelected = selectedMap.has(id);
       const card = document.createElement('button');
       card.type = 'button';
       card.className = 'card';
-      card.dataset.cardId = cardIdString;
-      card.setAttribute('aria-label', `Kart ${cardId}`);
-
+      card.dataset.cardId = id;
+      card.setAttribute('aria-label', `Kart ${id}`);
       if (isSelected) card.classList.add('selected');
       if (role === 'advisor') {
         card.classList.add('readonly');
@@ -229,29 +313,22 @@ document.addEventListener('DOMContentLoaded', () => {
 
       const number = document.createElement('span');
       number.className = 'card-number';
-      number.textContent = cardIdString;
-      card.append(number, createCardImage(cardIdString));
+      number.textContent = id;
+      card.append(number, createCardImage(id));
 
       if (role === 'client') {
         card.addEventListener('click', () => {
-          if (isSelected) {
-            socket.emit('deselectCard', { cardId: cardIdString });
-          } else if (selectedCards.length >= MAX_SELECTED_CARDS) {
-            showToast(`En fazla ${MAX_SELECTED_CARDS} kart seçebilirsiniz.`);
-          } else {
-            socket.emit('selectCard', { cardId: cardIdString });
-          }
+          if (isSelected) socket.emit('deselectCard', { cardId: id });
+          else if (selectedCards.length >= MAX_SELECTED_CARDS) showToast(`En fazla ${MAX_SELECTED_CARDS} kart seçebilirsiniz.`);
+          else socket.emit('selectCard', { cardId: id });
         });
       }
-
       elements.cardPool.appendChild(card);
     }
   }
 
   function renderSelectedCards() {
-    if (!elements.selectedCards) return;
     elements.selectedCards.innerHTML = '';
-
     if (selectedCards.length === 0) {
       const empty = document.createElement('p');
       empty.className = 'empty-state';
@@ -260,47 +337,89 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
 
-    [...selectedCards]
-      .sort((a, b) => a.order - b.order)
-      .forEach((item) => {
-        const wrapper = document.createElement(role === 'client' ? 'button' : 'div');
-        if (role === 'client') wrapper.type = 'button';
-        wrapper.className = 'card selected-card readonly';
-        wrapper.dataset.cardId = String(item.cardId);
-
-        if (role === 'client') {
-          wrapper.classList.remove('readonly');
-          wrapper.classList.add('client-editable');
-          wrapper.setAttribute('aria-label', `Seçim ${item.order}: Kart ${item.cardId}. Seçimi kaldırmak için tıklayın.`);
-          wrapper.addEventListener('click', () => socket.emit('deselectCard', { cardId: String(item.cardId) }));
-        }
-
-        const number = document.createElement('span');
-        number.className = 'card-number';
-        number.textContent = String(item.cardId);
-
-        const order = document.createElement('span');
-        order.className = 'selection-order';
-        order.textContent = `${item.order}. seçim`;
-
-        wrapper.append(number, createCardImage(String(item.cardId)), order);
-        elements.selectedCards.appendChild(wrapper);
-      });
+    [...selectedCards].sort((a, b) => a.order - b.order).forEach((item) => {
+      const wrapper = document.createElement(role === 'client' ? 'button' : 'div');
+      if (role === 'client') wrapper.type = 'button';
+      wrapper.className = 'card selected-card readonly';
+      if (role === 'client') {
+        wrapper.classList.remove('readonly');
+        wrapper.classList.add('client-editable');
+        wrapper.addEventListener('click', () => socket.emit('deselectCard', { cardId: String(item.cardId) }));
+      }
+      const number = document.createElement('span');
+      number.className = 'card-number';
+      number.textContent = String(item.cardId);
+      const order = document.createElement('span');
+      order.className = 'selection-order';
+      order.textContent = `${item.order}. seçim`;
+      wrapper.append(number, createCardImage(String(item.cardId)), order);
+      elements.selectedCards.appendChild(wrapper);
+    });
   }
+
+  elements.showLogin.addEventListener('click', () => setAuthMode('login'));
+  elements.showRegister.addEventListener('click', () => setAuthMode('register'));
+
+  elements.loginForm.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    elements.authMessage.textContent = 'Giriş yapılıyor...';
+    try {
+      const data = await api('/api/auth/login', {
+        method: 'POST',
+        body: JSON.stringify({ email: elements.loginEmail.value, password: elements.loginPassword.value })
+      });
+      saveAuth(data);
+      elements.loginPassword.value = '';
+      showAdvisorStart();
+      showToast('Giriş yapıldı.');
+    } catch (error) {
+      elements.authMessage.textContent = error.message;
+    }
+  });
+
+  elements.registerForm.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    elements.authMessage.textContent = 'Hesap oluşturuluyor...';
+    try {
+      const data = await api('/api/auth/register', {
+        method: 'POST',
+        body: JSON.stringify({
+          displayName: elements.registerName.value,
+          email: elements.registerEmail.value,
+          password: elements.registerPassword.value
+        })
+      });
+      saveAuth(data);
+      elements.registerPassword.value = '';
+      showAdvisorStart();
+      showToast('Hesabınız oluşturuldu. 3 ücretsiz kullanım hakkınız hazır.');
+    } catch (error) {
+      elements.authMessage.textContent = error.message;
+    }
+  });
+
+  elements.logoutButton.addEventListener('click', () => {
+    clearAuth();
+    selectedSetKey = null;
+    elements.setButtons.forEach((item) => item.classList.remove('selected'));
+    setAuthMode('login');
+    showAuthPanel();
+  });
 
   elements.setButtons.forEach((button) => {
     button.addEventListener('click', () => {
       selectedSetKey = button.dataset.set;
       elements.setButtons.forEach((item) => item.classList.toggle('selected', item === button));
-      elements.createSession.disabled = !selectedSetKey || !socket.connected;
+      const hasCredit = paidPlanActive(advisor) || Number(advisor?.trialSessionsRemaining || 0) > 0;
+      elements.createSession.disabled = !selectedSetKey || !socket.connected || !hasCredit;
     });
   });
 
   elements.createSession.addEventListener('click', () => {
-    if (!selectedSetKey || !socket.connected) return;
+    if (!selectedSetKey || !socket.connected || !authToken) return;
     elements.createSession.disabled = true;
     elements.createSession.textContent = 'Oturum oluşturuluyor...';
-    socket.emit('createRoom', { cardSet: selectedSetKey });
+    socket.emit('createRoom', { cardSet: selectedSetKey, authToken });
   });
 
   elements.copyLink.addEventListener('click', async () => {
@@ -316,18 +435,11 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  elements.resetSelection.addEventListener('click', () => {
-    socket.emit('resetRoomCards');
-  });
+  elements.resetSelection.addEventListener('click', () => socket.emit('resetRoomCards'));
+  elements.closeSession.addEventListener('click', () => socket.emit('closeRoom'));
 
-  elements.closeSession.addEventListener('click', () => {
-    socket.emit('closeRoom');
-  });
-
-  socket.on('connect', () => {
+  socket.on('connect', async () => {
     setConnectionBadge('online');
-    elements.createSession.disabled = !selectedSetKey;
-
     if (isInviteVisit) {
       showClientJoining();
       socket.emit('joinRoom', { roomID: inviteRoomID, token: inviteToken });
@@ -335,40 +447,36 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     const savedSession = getSavedAdvisorSession();
+    await restoreAdvisorAccount();
     if (savedSession?.roomID && savedSession?.token) {
       socket.emit('joinRoom', savedSession);
       return;
     }
-
-    showAdvisorStart();
+    if (advisor) showAdvisorStart();
+    else showAuthPanel();
   });
 
   socket.on('disconnect', () => {
     setConnectionBadge('offline');
     elements.createSession.disabled = true;
-    if (elements.sessionStatus && roomID) {
-      elements.sessionStatus.textContent = 'Sunucu bağlantısı kesildi. Yeniden bağlanılıyor...';
-    }
+    if (elements.sessionStatus && roomID) elements.sessionStatus.textContent = 'Sunucu bağlantısı kesildi. Yeniden bağlanılıyor...';
   });
 
   socket.on('roomCreated', (data) => {
     role = 'advisor';
     advisorToken = data.advisorToken;
     clientToken = data.clientToken;
+    if (data.advisor) advisor = data.advisor;
     elements.createSession.textContent = 'Oturum Oluştur';
-    elements.createSession.disabled = false;
     applyRoomState(data);
     saveAdvisorSession();
-    if (elements.inviteLink) elements.inviteLink.value = buildClientInviteLink();
+    elements.inviteLink.value = buildClientInviteLink();
     showToast('Oturum oluşturuldu. Danışan bağlantısını paylaşabilirsiniz.');
   });
 
   socket.on('joinedRoom', (data) => {
     role = data.role;
-    if (role === 'advisor') {
-      const saved = getSavedAdvisorSession();
-      advisorToken = saved?.token || null;
-    }
+    if (role === 'advisor') advisorToken = getSavedAdvisorSession()?.token || null;
     applyRoomState(data);
   });
 
@@ -377,22 +485,23 @@ document.addEventListener('DOMContentLoaded', () => {
     applyRoomState(data);
   });
 
-  socket.on('roomClosed', () => {
+  socket.on('roomClosed', async () => {
     const wasAdvisor = role === 'advisor';
-    if (wasAdvisor) clearAdvisorSession();
+    if (wasAdvisor) sessionStorage.removeItem(ADVISOR_SESSION_KEY);
     resetLocalSession();
-
     if (isInviteVisit || !wasAdvisor) {
       showClientJoining('Bu kart çalışması danışman tarafından kapatıldı.');
-    } else {
-      showAdvisorStart();
-      showToast('Oturum kapatıldı.');
+      return;
     }
+    await restoreAdvisorAccount();
+    showAdvisorStart();
+    showToast('Oturum kapatıldı.');
   });
 
-  socket.on('sessionError', ({ code, message } = {}) => {
+  socket.on('sessionError', async ({ code, message } = {}) => {
     const text = message || 'Oturum sırasında bir hata oluştu.';
     showToast(text);
+    elements.createSession.textContent = 'Oturum Oluştur';
 
     if (isInviteVisit) {
       showClientJoining(text);
@@ -400,18 +509,24 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     if (['ROOM_NOT_FOUND', 'INVALID_TOKEN'].includes(code)) {
-      clearAdvisorSession();
-      showAdvisorStart();
+      sessionStorage.removeItem(ADVISOR_SESSION_KEY);
+      await restoreAdvisorAccount();
+      return advisor ? showAdvisorStart() : showAuthPanel();
     }
 
-    elements.createSession.textContent = 'Oturum Oluştur';
-    elements.createSession.disabled = !selectedSetKey || !socket.connected;
+    if (code === 'AUTH_REQUIRED') {
+      clearAuth();
+      return showAuthPanel();
+    }
+
+    if (code === 'LICENSE_REQUIRED') {
+      await restoreAdvisorAccount();
+      showAdvisorStart();
+      elements.licenseMessage.textContent = text;
+    }
   });
 
   setConnectionBadge('waiting');
-  if (isInviteVisit) {
-    showClientJoining();
-  } else {
-    show(elements.advisorStart);
-  }
+  setAuthMode('login');
+  if (isInviteVisit) showClientJoining();
 });
