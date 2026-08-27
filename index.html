@@ -11,19 +11,69 @@
   <main class="app-shell">
     <header class="hero">
       <div>
-        <p class="eyebrow">V1 · Online danışmanlık yardımcı aracı</p>
+        <p class="eyebrow">Online danışmanlık yardımcı aracı</p>
         <h1>Persona Card</h1>
         <p class="tagline">Kartlar cevap vermez; konuşmayı kolaylaştırır.</p>
       </div>
       <div id="connection-badge" class="badge badge-waiting">Bağlanıyor</div>
     </header>
 
-    <section id="advisor-start" class="panel">
+    <section id="auth-panel" class="panel hidden">
       <div class="panel-heading">
         <div>
-          <p class="section-kicker">Danışman</p>
-          <h2>Kart çalışması başlat</h2>
+          <p class="section-kicker">Danışman hesabı</p>
+          <h2>Persona Card'a giriş yapın</h2>
         </div>
+      </div>
+      <p class="muted">Yeni hesaplar 3 ücretsiz kart çalışmasıyla başlar. Danışanlar hesap açmadan yalnızca kendilerine gönderilen bağlantıdan katılır.</p>
+
+      <div class="auth-tabs" role="tablist">
+        <button id="show-login" class="auth-tab active" type="button">Giriş Yap</button>
+        <button id="show-register" class="auth-tab" type="button">Ücretsiz Başla</button>
+      </div>
+
+      <form id="login-form" class="auth-form">
+        <label>E-posta
+          <input id="login-email" type="email" autocomplete="email" required>
+        </label>
+        <label>Şifre
+          <input id="login-password" type="password" autocomplete="current-password" minlength="8" required>
+        </label>
+        <button class="primary-button" type="submit">Giriş Yap</button>
+      </form>
+
+      <form id="register-form" class="auth-form hidden">
+        <label>Ad Soyad
+          <input id="register-name" type="text" autocomplete="name" minlength="2" maxlength="80" required>
+        </label>
+        <label>E-posta
+          <input id="register-email" type="email" autocomplete="email" required>
+        </label>
+        <label>Şifre
+          <input id="register-password" type="password" autocomplete="new-password" minlength="8" maxlength="128" required>
+        </label>
+        <p class="form-note">En az 8 karakter. Bu sürümde kart seçimi dışında danışana ait görüşme notu veya psikolojik veri saklanmaz.</p>
+        <button class="primary-button" type="submit">Hesap Oluştur</button>
+      </form>
+      <p id="auth-message" class="form-message" aria-live="polite"></p>
+    </section>
+
+    <section id="advisor-start" class="panel hidden">
+      <div class="account-bar">
+        <div>
+          <p class="section-kicker">Danışman paneli</p>
+          <h2 id="advisor-name">Kart çalışması başlat</h2>
+          <p id="account-status" class="muted account-status"></p>
+        </div>
+        <button id="logout-button" class="text-button" type="button">Çıkış Yap</button>
+      </div>
+
+      <div id="trial-card" class="trial-card">
+        <div>
+          <strong id="trial-title">3 ücretsiz çalışma</strong>
+          <p id="trial-description" class="muted">Lisans almadan önce Persona Card'ı gerçek görüşmelerinizde deneyebilirsiniz.</p>
+        </div>
+        <span id="trial-count" class="trial-count">3</span>
       </div>
 
       <p class="muted">Seansın ihtiyaç duyduğunuz anında bir kart seti seçin. Danışan bağlantıdan katılır ve kartları kendi çağrışımına göre seçer.</p>
@@ -42,6 +92,7 @@
       </div>
 
       <button id="create-session" class="primary-button" type="button" disabled>Oturum Oluştur</button>
+      <p id="license-message" class="form-message"></p>
     </section>
 
     <section id="client-joining" class="panel hidden">
@@ -86,7 +137,7 @@
         <h3>Seçilen kartlar</h3>
         <p class="muted">Seçim sırası korunur. Sistem kartlara herhangi bir anlam veya yorum yüklemez.</p>
         <div id="selected-cards" class="selected-grid">
-          <p id="empty-selection" class="empty-state">Henüz kart seçilmedi.</p>
+          <p class="empty-state">Henüz kart seçilmedi.</p>
         </div>
       </div>
     </section>
