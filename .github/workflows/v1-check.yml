@@ -2,12 +2,12 @@ name: Persona Card Frontend Checks
 
 on:
   push:
-    branches: [v1.1-advisor-accounts]
+    branches: [v1.2-annual-license-pwa]
   pull_request:
     branches: [main]
 
 jobs:
-  javascript-syntax:
+  frontend-check:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -16,5 +16,9 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '20'
-      - name: Check script syntax
+      - name: Check application JavaScript
         run: node --check script.js
+      - name: Check service worker JavaScript
+        run: node --check service-worker.js
+      - name: Validate PWA manifest JSON
+        run: node -e "JSON.parse(require('fs').readFileSync('manifest.webmanifest','utf8')); console.log('manifest ok')"
