@@ -85,13 +85,13 @@
       <div class="install-card">
         <div>
           <strong>Uygulama gibi kullanın</strong>
-          <p class="muted">Persona Card'ı telefonunuza veya bilgisayarınıza kurabilir, kartları çevrimdışı kullanmak için önceden hazırlayabilirsiniz.</p>
+          <p class="muted">Persona Card'ı telefonunuza veya bilgisayarınıza kurabilir, yıllık lisansınız aktifken kartları cihazda da kullanabilirsiniz.</p>
         </div>
         <div class="install-actions">
           <button id="install-app" class="secondary-button hidden" type="button">Uygulamayı Kur</button>
-          <button id="prepare-offline" class="secondary-button" type="button">Kartları Çevrimdışı Hazırla</button>
+          <button id="prepare-offline" class="secondary-button" type="button">Kartları Cihaza İndir</button>
         </div>
-        <p id="offline-status" class="form-note"></p>
+        <p id="offline-status" class="form-note">Çevrimiçi danışan bağlantısı internet gerektirir.</p>
       </div>
 
       <p class="muted">Seansın ihtiyaç duyduğunuz anında bir kart seti seçin. Danışan bağlantıdan katılır ve kartları kendi çağrışımına göre seçer.</p>
@@ -109,7 +109,10 @@
         </button>
       </div>
 
-      <button id="create-session" class="primary-button" type="button" disabled>Oturum Oluştur</button>
+      <div class="launch-actions">
+        <button id="create-session" class="primary-button" type="button" disabled>Çevrimiçi Oturum Oluştur</button>
+        <button id="open-offline" class="secondary-button" type="button" disabled>Cihazda Kartları Aç</button>
+      </div>
       <p id="license-message" class="form-message"></p>
     </section>
 
@@ -138,6 +141,14 @@
         <div class="action-row">
           <button id="reset-selection" class="secondary-button" type="button">Seçimleri Sıfırla</button>
           <button id="close-session" class="danger-button" type="button">Oturumu Kapat</button>
+        </div>
+      </div>
+
+      <div id="offline-tools" class="advisor-tools hidden">
+        <p class="muted">Bu modda kartlar yalnızca bu cihazda kullanılır. Danışana bağlantı gönderilmez.</p>
+        <div class="action-row">
+          <button id="offline-reset" class="secondary-button" type="button">Seçimleri Sıfırla</button>
+          <button id="offline-close" class="secondary-button" type="button">Kart Galerisinden Çık</button>
         </div>
       </div>
 
