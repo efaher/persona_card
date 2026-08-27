@@ -5,6 +5,8 @@ const SHELL_ASSETS = [
   '/',
   '/index.html',
   '/style.css',
+  '/runtime-config.js',
+  '/backend-router.js',
   '/script.js',
   '/manifest.webmanifest',
   '/icons/persona-card-icon.svg',
