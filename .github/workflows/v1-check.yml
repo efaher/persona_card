@@ -18,6 +18,14 @@ jobs:
           node-version: '20'
       - name: Check application JavaScript
         run: node --check script.js
+      - name: Check backend router JavaScript
+        run: node --check backend-router.js
+      - name: Check runtime config builder
+        run: node --check scripts/write-runtime-config.js
+      - name: Generate staging runtime config
+        env:
+          PERSONA_CARD_BACKEND_URL: https://persona-card-v12-staging-efaher.onrender.com
+        run: node scripts/write-runtime-config.js && node --check runtime-config.js
       - name: Check service worker JavaScript
         run: node --check service-worker.js
       - name: Validate PWA manifest JSON
