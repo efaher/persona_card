@@ -1,0 +1,20 @@
+{
+  "name": "Persona Card – Seans Kolaylaştırıcı",
+  "short_name": "Persona Card",
+  "description": "Seanslarda görsel ifade ve çağrışımı kolaylaştıran dijital kart aracı.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#f4f1ec",
+  "theme_color": "#4d675d",
+  "lang": "tr",
+  "categories": ["productivity", "education"],
+  "icons": [
+    {
+      "src": "/icons/persona-card-icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
