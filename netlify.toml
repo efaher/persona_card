@@ -1,0 +1,12 @@
+[build]
+  command = "node scripts/write-runtime-config.js"
+  publish = "."
+
+[context.production.environment]
+  PERSONA_CARD_BACKEND_URL = "https://terapikart.onrender.com"
+
+[context.deploy-preview.environment]
+  PERSONA_CARD_BACKEND_URL = "https://persona-card-v12-staging-efaher.onrender.com"
+
+[context.branch-deploy.environment]
+  PERSONA_CARD_BACKEND_URL = "https://persona-card-v12-staging-efaher.onrender.com"
