@@ -13,27 +13,37 @@ Bu belge 2026-08-29 tarihli V1.2 staging pilotu sonrasında production öncesi k
 - production frontend yanlış/legacy backend'e bağlanırsa build fail-closed duruyor
 - frontend `Referrer-Policy: no-referrer`, `X-Frame-Options: DENY`, `X-Content-Type-Options: nosniff` ve temel Permissions Policy ile yayınlanıyor
 - `runtime-config.js` production backend değişikliklerinde stale cache riskini azaltmak için `no-store`
+- auth/admin endpointleri bağımlılıksız rate-limit middleware ile korunuyor; limit aşımı `429 RATE_LIMITED` + `Retry-After` döndürüyor
+- login/register için IP tabanlı ortak limit; login için e-posta içeren ayrı limit; admin lisans endpointi için ayrı limit bulunuyor
+- danışan davet secret'ı query parametresinden URL fragment'a taşındı
+- fragment içindeki token sayfa açılışında `sessionStorage`'a alınıp adres çubuğundan hemen temizleniyor; aynı sekmede reconnect destekleniyor
+- CI, danışan tokenının yeniden query parametresine taşınmasını statik guard ile engelliyor
 
 ## P0 — Ticari production öncesi tamamlanmalı
 
-### 1. Kimlik doğrulama rate limit
+### 1. Kimlik doğrulama rate limit — KOD TAMAMLANDI
 
-`/api/auth/login`, `/api/auth/register` ve admin lisans endpointlerinde brute-force / otomasyon sınırı eklenmeli.
+Uygulanan varsayılanlar:
+- auth IP ortak pencere: 15 dakika / 60 istek
+- login IP+e-posta: 15 dakika / 10 istek
+- register IP: 15 dakika / 8 istek
+- admin lisans IP: 15 dakika / 10 istek
+- limit aşımında genel `429 RATE_LIMITED`, `Retry-After` ve rate-limit response headerları
+- değerler environment variable ile değiştirilebilir
 
-Kabul ölçütü:
-- IP bazlı limit
-- login için ayrıca hesap/e-posta bazlı limit
-- limit aşımında genel `429` yanıtı
-- başarılı girişte kullanıcı deneyimini bozmayan geri kazanım
+Kod ve otomatik middleware testi başarılıdır. Production öncesi gerçek staging endpointinde kontrollü 429 smoke testi yapılacaktır.
 
-### 2. Danışan oturum tokenını URL query'den çıkar
+### 2. Danışan oturum tokenını URL query'den çıkar — KOD TAMAMLANDI
 
-Mevcut danışan davet linkinde `room` ve `token` query parametresinde taşınıyor. Tokenın web sunucusu logu, browser history veya başka ara katmanlara yazılma riskini azaltmak için gizli katılım tokenı URL fragment (`#...`) veya tek kullanımlık exchange-code modeline taşınmalı.
+Yeni danışan linki:
+- `room` ve gizli `token` URL fragment (`#room=...&token=...`) içinde oluşturulur
+- fragment HTTP request path/query ile sunucuya gönderilmez
+- sayfa açıldığında token yalnız aynı sekmenin `sessionStorage` alanına alınır
+- adres çubuğu `#room=...` biçimine scrub edilir; token görünür URL'den kaldırılır
+- eski `?room=...&token=...` query linkleri yeni frontend tarafından davet olarak okunmaz
+- mevcut 6 saatlik backend oda süresi değişmedi
 
-Kabul ölçütü:
-- gizli token HTTP request path/query içinde sunucuya gitmemeli
-- mevcut 6 saatlik oda süresi korunmalı
-- eski query linkleri production'da kabul edilmemeli veya kontrollü geçiş uygulanmalı
+Kod ve CI guard başarılıdır. Production öncesi staging deploy preview'da iki cihazlı yeni-link smoke testi yapılacaktır.
 
 ### 3. Production PostgreSQL + backup/restore
 
@@ -82,8 +92,9 @@ PWA shell şu an Socket.IO client dosyasını CDN'den alıyor ve cache'liyor. Pr
 - auth ve admin güvenlik olaylarını minimum kişisel veriyle logla
 - dependency update/dependabot süreci kur
 - secret rotation prosedürü yaz
+- rate-limit state'i birden fazla backend instance kullanılacaksa ortak store'a taşı
 - periyodik backup restore tatbikatı ve olay müdahale kontrol listesi oluştur
 
 ## Merge kararı
 
-Staging pilotu kabul edilmiştir; ancak P0 maddeleri tamamlanmadan "ticari production güvenli" etiketi verilmez. Production maliyetli kaynak kurulumu için ayrıca onay gerekir.
+Staging pilotu kabul edilmiştir. P0/1 ve P0/2 kod seviyesinde tamamlandı; staging smoke doğrulaması bekliyor. P0/3 production maliyetli altyapı kurulumuna, P0/4 ise offline lisans sertleştirmesine bağlıdır. Bunlar tamamlanmadan "ticari production güvenli" etiketi verilmez.
