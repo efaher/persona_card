@@ -2,6 +2,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const BACKEND_URL = 'https://terapikart.onrender.com';
   const MAX_SELECTED_CARDS = 10;
   const ADVISOR_SESSION_KEY = 'persona-card-advisor-session';
+  const CLIENT_INVITE_KEY = 'persona-card-client-invite';
   const AUTH_TOKEN_KEY = 'persona-card-auth-token';
   const ADVISOR_CACHE_KEY = 'persona-card-advisor-cache';
   const CARD_CACHE_NAME = 'persona-card-cards-v1.2';
@@ -65,9 +66,30 @@ document.addEventListener('DOMContentLoaded', () => {
     ? window.io(BACKEND_URL, { transports: ['websocket', 'polling'] })
     : null;
 
-  const urlParams = new URLSearchParams(window.location.search);
-  const inviteRoomID = urlParams.get('room');
-  const inviteToken = urlParams.get('token');
+  function readSavedClientInvite() {
+    try {
+      const raw = sessionStorage.getItem(CLIENT_INVITE_KEY);
+      return raw ? JSON.parse(raw) : null;
+    } catch {
+      sessionStorage.removeItem(CLIENT_INVITE_KEY);
+      return null;
+    }
+  }
+
+  const inviteHash = new URLSearchParams(window.location.hash.replace(/^#/, ''));
+  const hashRoomID = String(inviteHash.get('room') || '').trim().toUpperCase();
+  const hashToken = String(inviteHash.get('token') || '').trim();
+
+  if (hashRoomID && hashToken) {
+    sessionStorage.setItem(CLIENT_INVITE_KEY, JSON.stringify({ roomID: hashRoomID, token: hashToken }));
+    const scrubbedUrl = new URL(window.location.href);
+    scrubbedUrl.hash = `room=${encodeURIComponent(hashRoomID)}`;
+    window.history.replaceState(null, document.title, scrubbedUrl.toString());
+  }
+
+  const savedClientInvite = readSavedClientInvite();
+  const inviteRoomID = hashRoomID || String(savedClientInvite?.roomID || '').trim().toUpperCase();
+  const inviteToken = hashToken || String(savedClientInvite?.token || '').trim();
   const isInviteVisit = Boolean(inviteRoomID && inviteToken);
 
   let selectedSetKey = null;
@@ -120,6 +142,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!response.ok) {
       const error = new Error(data.message || 'İşlem tamamlanamadı.');
       error.code = data.code;
+      error.retryAfterSeconds = data.retryAfterSeconds;
       throw error;
     }
     return data;
@@ -223,8 +246,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const inviteUrl = new URL(window.location.href);
     inviteUrl.search = '';
     inviteUrl.hash = '';
-    inviteUrl.searchParams.set('room', roomID);
-    inviteUrl.searchParams.set('token', clientToken);
+    const fragment = new URLSearchParams();
+    fragment.set('room', roomID);
+    fragment.set('token', clientToken);
+    inviteUrl.hash = fragment.toString();
     return inviteUrl.toString();
   }
 
@@ -466,7 +491,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const completed = Math.min(index + batch.length, urls.length);
         elements.offlineStatus.textContent = `Kartlar cihaza indiriliyor: ${completed}/${urls.length}`;
       }
-      elements.offlineStatus.textContent = '121 kart cihazda hazır. Çevrimiçi oturumlar dışında kart galerisi internet olmadan açılabilir.';
+      elements.offlineStatus.textContent = '121 kart cihazda hazır. Cihaz modunu açmak için aşağıdan bir kart seti seçin.';
       showToast('Kartlar cihazda hazırlandı.');
     } catch {
       elements.offlineStatus.textContent = 'Kartlar tamamen indirilemedi. İnternet bağlantınızı kontrol edip tekrar deneyin.';
@@ -660,6 +685,7 @@ document.addEventListener('DOMContentLoaded', () => {
     socket.on('roomClosed', async () => {
       const wasAdvisor = role === 'advisor';
       if (wasAdvisor) sessionStorage.removeItem(ADVISOR_SESSION_KEY);
+      if (role === 'client' || isInviteVisit) sessionStorage.removeItem(CLIENT_INVITE_KEY);
       resetLocalSession();
       if (isInviteVisit || !wasAdvisor) {
         showClientJoining('Bu kart çalışması danışman tarafından kapatıldı.');
@@ -676,6 +702,9 @@ document.addEventListener('DOMContentLoaded', () => {
       elements.createSession.textContent = 'Çevrimiçi Oturum Oluştur';
 
       if (isInviteVisit) {
+        if (['ROOM_NOT_FOUND', 'ROOM_EXPIRED', 'INVALID_TOKEN'].includes(code)) {
+          sessionStorage.removeItem(CLIENT_INVITE_KEY);
+        }
         showClientJoining(text);
         return;
       }
