@@ -2,9 +2,14 @@ const fs = require('fs');
 const path = require('path');
 const { spawnSync } = require('child_process');
 
-const source = require.resolve('socket.io-client/dist/socket.io.min.js');
+const source = path.join(process.cwd(), 'node_modules', 'socket.io-client', 'dist', 'socket.io.min.js');
 const vendorDir = path.join(process.cwd(), 'vendor');
 const target = path.join(vendorDir, 'socket.io.min.js');
+
+if (!fs.existsSync(source)) {
+  console.error('socket.io-client paketi kurulmamış veya dist/socket.io.min.js bulunamadı.');
+  process.exit(1);
+}
 
 fs.mkdirSync(vendorDir, { recursive: true });
 fs.copyFileSync(source, target);
