@@ -32,6 +32,16 @@ Fiyat ve sözleşme metni kod içine sabitlenmez; ticari lansman öncesinde ayr�
 7. Seçim sırası korunur.
 8. Danışman oturumu kapatabilir veya seçimleri sıfırlayabilir.
 
+## Güvenli danışan bağlantısı
+
+V1.2'de gizli danışan katılım tokenı URL query parametresinde taşınmaz. Yeni davet bağlantısı `#room=...&token=...` fragment biçimindedir.
+
+- URL fragment HTTP request path/query ile sunucuya gönderilmez.
+- Sayfa açıldığında token aynı sekmenin `sessionStorage` alanına alınır.
+- Token adres çubuğundan hemen temizlenir; yalnız oda kodu görünür kalır.
+- Eski `?room=...&token=...` query linkleri davet olarak kabul edilmez.
+- Aynı sekmedeki kısa süreli reconnect desteklenir.
+
 ## PWA ve çevrimdışı hazırlık
 
 V1.2 ile `manifest.webmanifest` ve `service-worker.js` eklenmiştir. Destekleyen tarayıcılarda Persona Card ana ekrana/masaüstüne kurulabilir.
@@ -65,4 +75,6 @@ Aktif yıllık lisanslı danışman iki kart setindeki toplam 121 kartı cihaz �
 - KVKK ve gizlilik metinlerinin hazırlanması
 - Kullanım/lisans ve hizmet taahhüdü sözleşmesinin hazırlanması
 - Yıllık lisans ödeme ve yenileme akışının bağlanması
+- Production PostgreSQL ve yedek/geri yükleme planının doğrulanması
+- Offline cihaz modu lisans yetkisinin imzalı entitlement ile sertleştirilmesi
 - `efia.net.tr` altında üretim alan adının kurulması
