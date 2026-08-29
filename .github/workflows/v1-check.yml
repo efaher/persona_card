@@ -18,6 +18,15 @@ jobs:
           node-version: '20'
       - name: Check application JavaScript
         run: node --check script.js
+      - name: Enforce fragment-only client invite secret
+        run: |
+          if grep -F "searchParams.set('token'" script.js; then
+            echo "Client invite token URL query parametresine geri dönmemeli."
+            exit 1
+          fi
+          grep -F "window.location.hash" script.js
+          grep -F "inviteUrl.hash = fragment.toString()" script.js
+          echo "Client invite fragment guard ok"
       - name: Check backend router JavaScript
         run: node --check backend-router.js
       - name: Check runtime config builder
