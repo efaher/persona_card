@@ -20,6 +20,9 @@ Bu belge 2026-08-29 tarihli V1.2 staging pilotu sonrasında production öncesi k
 - fragment içindeki token sayfa açılışında `sessionStorage`'a alınıp adres çubuğundan hemen temizleniyor; aynı sekmede reconnect destekleniyor
 - CI, danışan tokenının yeniden query parametresine taşınmasını statik guard ile engelliyor
 - staging deploy preview'da yeni fragment linki açıldı ve gizli tokenın adres çubuğundan temizlendiği gerçek cihazda doğrulandı (2026-08-29)
+- aktif yıllık lisans için backend tarafından en fazla 30 günlük Ed25519 imzalı çevrimdışı entitlement üretiliyor
+- frontend entitlement imzasını Web Crypto ile doğruluyor; `plan=annual` localStorage kaydı tek başına cihaz modunu açamıyor
+- staging hesabında imzalı çevrimdışı yetkinin `29.09.2026` tarihine kadar geçerli göründüğü ve cihaz modunda kart seçiminin çalıştığı gerçek cihazda doğrulandı
 
 ## P0 — Ticari production öncesi tamamlanmalı
 
@@ -58,17 +61,19 @@ Kabul ölçütü:
 - ayrı DB'ye restore
 - `advisors` ve `license_events` doğrulaması
 
-### 4. Offline lisans yetkisini sertleştir
+### 4. Offline lisans yetkisini sertleştir — STAGING DOĞRULANDI
 
-Cihaz modu şu an tarayıcıda cache'lenen danışman/lisans bilgisini kullanır. Tarayıcı local storage kullanıcı tarafından değiştirilebilir; bu nedenle offline ücretli özelliğin lisans kontrolü tam güvenli değildir.
+Uygulanan model:
+- backend aktif yıllık lisans için en fazla 30 günlük imzalı offline entitlement üretir
+- entitlement geçerliliği yıllık lisans bitiş tarihini aşamaz
+- imza Ed25519 ile üretilir; private key backend dışında paylaşılmaz
+- frontend Web Crypto ile public key üzerinden imzayı doğrular
+- entitlement danışman hesap ID'sine bağlıdır
+- geçerli entitlement yoksa cihaz modu ve kartların cihaza hazırlanması güvenlik guard'ı tarafından engellenir
+- tarayıcıdaki `plan=annual` alanını elle değiştirmek tek başına cihaz modunu açmaz
+- public doğrulama anahtarı ayrı CacheStorage alanında tutulur
 
-Önerilen model:
-- backend, kısa/orta süreli imzalı offline entitlement üretir
-- frontend yalnız public key ile imzayı doğrular
-- entitlement hesap ID + lisans bitişi + son online doğrulama zamanını içerir
-- periyodik online yeniden doğrulama gerekir
-
-Bu madde online oturum lisansını etkilemez; online kullanım zaten backend tarafından zorlanır.
+Staging gerçek cihaz doğrulaması: imzalı cihaz yetkisi `29.09.2026` tarihine kadar geçerli göründü ve cihaz modunda kart seçimi çalıştı. P0/4 kabul edildi.
 
 ## P1 — İlk ücretli kullanıcıdan önce güçlü biçimde önerilir
 
@@ -99,4 +104,4 @@ PWA shell şu an Socket.IO client dosyasını CDN'den alıyor ve cache'liyor. Pr
 
 ## Merge kararı
 
-Staging pilotu kabul edilmiştir. P0/1 kod seviyesinde tamamlandı. P0/2 token scrub gerçek cihazda doğrulandı; yalnız realtime seçim smoke kontrolü kaldı. P0/3 production maliyetli altyapı kurulumuna, P0/4 ise offline lisans sertleştirmesine bağlıdır. Bunlar tamamlanmadan "ticari production güvenli" etiketi verilmez.
+Staging pilotu kabul edilmiştir. P0/1 kod seviyesinde tamamlandı. P0/2 token scrub gerçek cihazda doğrulandı; yalnız realtime seçim smoke kontrolü kaldı. P0/4 imzalı çevrimdışı lisans gerçek cihazda doğrulandı ve kabul edildi. Ana teknik production blokajı P0/3 olan ayrı production PostgreSQL + backup/restore kurulumudur. Bunlar tamamlanmadan "ticari production güvenli" etiketi verilmez.
