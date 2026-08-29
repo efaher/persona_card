@@ -34,6 +34,17 @@ jobs:
             exit 1
           fi
           echo "Self-hosted Socket.IO guard ok"
+      - name: Check account security frontend
+        run: |
+          grep -F 'account-security.js' index.html
+          grep -F '/account-security.js' service-worker.js
+          grep -F "hashParams.get('verify-email')" account-security.js
+          grep -F "hashParams.get('reset-password')" account-security.js
+          grep -F '/api/auth/password-reset/request' account-security.js
+          grep -F '/api/auth/password-reset/confirm' account-security.js
+          grep -F '/api/auth/email-verification/request' account-security.js
+          grep -F '/api/auth/email-verification/confirm' account-security.js
+          echo "Account security frontend guard ok"
       - name: Check offline license JavaScript
         run: |
           grep -F 'offline-entitlement.js' index.html
