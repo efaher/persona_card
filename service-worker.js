@@ -1,4 +1,4 @@
-const SHELL_CACHE = 'persona-card-shell-v1.2.2';
+const SHELL_CACHE = 'persona-card-shell-v1.2.3';
 const CARD_CACHE = 'persona-card-cards-v1.2';
 const SHELL_ASSETS = [
   '/',
@@ -6,6 +6,7 @@ const SHELL_ASSETS = [
   '/style.css',
   '/runtime-config.js',
   '/backend-router.js',
+  '/account-security.js',
   '/script.js',
   '/offline-entitlement.js',
   '/offline-license-guard.js',
