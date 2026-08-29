@@ -22,7 +22,7 @@ Bu belge 2026-08-29 tarihli V1.2 staging pilotu sonrasında production öncesi k
 - staging deploy preview'da yeni fragment linki açıldı ve gizli tokenın adres çubuğundan temizlendiği gerçek cihazda doğrulandı (2026-08-29)
 - aktif yıllık lisans için backend tarafından en fazla 30 günlük Ed25519 imzalı çevrimdışı entitlement üretiliyor
 - frontend entitlement imzasını Web Crypto ile doğruluyor; `plan=annual` localStorage kaydı tek başına cihaz modunu açamıyor
-- staging hesabında imzalı çevrimdışı yetkinin `29.09.2026` tarihine kadar geçerli göründüğü ve cihaz modunda kart seçiminin çalıştığı gerçek cihazda doğrulandı
+- staging hesabında imzalı çevrimdışı yetkinin `29.09.2026` tarihine kadar geçerli göründüğü, internet tamamen kapatıldıktan sonra cihaz modunun açıldığı ve kart seçiminin çalıştığı gerçek cihazda doğrulandı (2026-08-29)
 
 ## P0 — Ticari production öncesi tamamlanmalı
 
@@ -61,7 +61,7 @@ Kabul ölçütü:
 - ayrı DB'ye restore
 - `advisors` ve `license_events` doğrulaması
 
-### 4. Offline lisans yetkisini sertleştir — STAGING DOĞRULANDI
+### 4. Offline lisans yetkisini sertleştir — STAGING + INTERNET-OFF DOĞRULANDI
 
 Uygulanan model:
 - backend aktif yıllık lisans için en fazla 30 günlük imzalı offline entitlement üretir
@@ -73,7 +73,7 @@ Uygulanan model:
 - tarayıcıdaki `plan=annual` alanını elle değiştirmek tek başına cihaz modunu açmaz
 - public doğrulama anahtarı ayrı CacheStorage alanında tutulur
 
-Staging gerçek cihaz doğrulaması: imzalı cihaz yetkisi `29.09.2026` tarihine kadar geçerli göründü ve cihaz modunda kart seçimi çalıştı. P0/4 kabul edildi.
+Staging gerçek cihaz doğrulaması: imzalı cihaz yetkisi `29.09.2026` tarihine kadar geçerli göründü; internet tamamen kapatıldıktan sonra cihaz modu açıldı ve kart seçimi çalıştı. P0/4 kabul edildi.
 
 ## P1 — İlk ücretli kullanıcıdan önce güçlü biçimde önerilir
 
@@ -104,4 +104,4 @@ PWA shell şu an Socket.IO client dosyasını CDN'den alıyor ve cache'liyor. Pr
 
 ## Merge kararı
 
-Staging pilotu kabul edilmiştir. P0/1 kod seviyesinde tamamlandı. P0/2 token scrub gerçek cihazda doğrulandı; yalnız realtime seçim smoke kontrolü kaldı. P0/4 imzalı çevrimdışı lisans gerçek cihazda doğrulandı ve kabul edildi. Ana teknik production blokajı P0/3 olan ayrı production PostgreSQL + backup/restore kurulumudur. Bunlar tamamlanmadan "ticari production güvenli" etiketi verilmez.
+Staging pilotu kabul edilmiştir. P0/1 kod seviyesinde tamamlandı. P0/2 token scrub gerçek cihazda doğrulandı; yalnız realtime seçim smoke kontrolü kaldı. P0/4 imzalı çevrimdışı lisans internet tamamen kapalı gerçek cihazda doğrulandı ve kabul edildi. Ana teknik production blokajı P0/3 olan ayrı production PostgreSQL + backup/restore kurulumudur. Bunlar tamamlanmadan `ticari production güvenli` etiketi verilmez.
