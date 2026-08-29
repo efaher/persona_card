@@ -44,6 +44,12 @@ jobs:
           grep -F '/api/auth/password-reset/confirm' account-security.js
           grep -F '/api/auth/email-verification/request' account-security.js
           grep -F '/api/auth/email-verification/confirm' account-security.js
+          grep -F 'data-persona-account-action' account-security.js
+          grep -F "forgotButton.className = 'text-button'" account-security.js
+          if grep -F 'visibilityObserver' account-security.js; then
+            echo "Hesap kurtarma görünürlük döngüsü geri eklenmemeli."
+            exit 1
+          fi
           echo "Account security frontend guard ok"
       - name: Check offline license JavaScript
         run: |
