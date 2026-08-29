@@ -1,4 +1,4 @@
-const SHELL_CACHE = 'persona-card-shell-v1.2';
+const SHELL_CACHE = 'persona-card-shell-v1.2.1';
 const CARD_CACHE = 'persona-card-cards-v1.2';
 const SOCKET_IO_URL = 'https://cdn.socket.io/4.7.2/socket.io.min.js';
 const SHELL_ASSETS = [
@@ -8,6 +8,8 @@ const SHELL_ASSETS = [
   '/runtime-config.js',
   '/backend-router.js',
   '/script.js',
+  '/offline-entitlement.js',
+  '/offline-license-guard.js',
   '/manifest.webmanifest',
   '/icons/persona-card-icon.svg',
   '/icons/persona-card-192.png',
@@ -30,7 +32,7 @@ self.addEventListener('activate', (event) => {
     caches.keys()
       .then((keys) => Promise.all(
         keys
-          .filter((key) => key.startsWith('persona-card-') && ![SHELL_CACHE, CARD_CACHE].includes(key))
+          .filter((key) => key.startsWith('persona-card-') && ![SHELL_CACHE, CARD_CACHE, 'persona-card-license-v1'].includes(key))
           .map((key) => caches.delete(key))
       ))
       .then(() => self.clients.claim())
