@@ -18,6 +18,14 @@ jobs:
           node-version: '20'
       - name: Check application JavaScript
         run: node --check script.js
+      - name: Check offline license JavaScript
+        run: |
+          node --check offline-entitlement.js
+          node --check offline-license-guard.js
+          grep -F 'offline-entitlement.js' index.html
+          grep -F 'offline-license-guard.js' index.html
+          grep -F '/api/offline-entitlement' offline-license-guard.js
+          echo "Signed offline license guard ok"
       - name: Enforce fragment-only client invite secret
         run: |
           if grep -F "searchParams.set('token'" script.js; then
