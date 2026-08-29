@@ -24,6 +24,10 @@ Bu belge 2026-08-29 tarihli V1.2 staging pilotu sonrasında production öncesi k
 - aktif yıllık lisans için backend tarafından en fazla 30 günlük Ed25519 imzalı çevrimdışı entitlement üretiliyor
 - frontend entitlement imzasını Web Crypto ile doğruluyor; `plan=annual` localStorage kaydı tek başına cihaz modunu açamıyor
 - staging hesabında imzalı çevrimdışı yetkinin `29.09.2026` tarihine kadar geçerli göründüğü, internet tamamen kapatıldıktan sonra cihaz modunun açıldığı ve kart seçiminin çalıştığı gerçek cihazda doğrulandı (2026-08-29)
+- `license_events`, `ADMIN_LICENSE_SECRET` ile korunan salt-okunur `/api/admin/licenses/events` endpointinden danışman e-postasıyla sorgulanabiliyor; yalnız public danışman alanları ve audit olayları dönüyor
+- audit endpointi için yanlış secret `401`, doğru secret ile aktivasyon/yenileme event sırası entegrasyon testinde doğrulandı
+- Socket.IO client üçüncü taraf CDN'den kaldırıldı; frontend build sırasında sabit `socket.io-client@4.7.2` paketinden `vendor/socket.io.min.js` üretiliyor ve PWA shell içinde yerel olarak cache'leniyor
+- CI, `cdn.socket.io` kullanımının tekrar eklenmesini ve vendor dosyasının üretilmemesini engelliyor
 
 ## P0 — Ticari production öncesi tamamlanmalı
 
@@ -78,21 +82,39 @@ Staging gerçek cihaz doğrulaması: imzalı cihaz yetkisi `29.09.2026` tarihine
 
 ## P1 — İlk ücretli kullanıcıdan önce güçlü biçimde önerilir
 
-### 5. E-posta doğrulama
+### 5. E-posta doğrulama — BEKLİYOR
 
 E-posta lisans kimliği olarak kullanılacaksa hesap sahibinin e-postayı doğruladığı kanıtlanmalı. Aksi halde başka bir kişinin adresiyle hesap açılabilir.
 
-### 6. Şifre sıfırlama
+Bu iş güvenli mail gönderim katmanı gerektirir. SMTP/posta sağlayıcısı seçilmeden kullanıcı akışına yarım bir doğrulama sistemi eklenmeyecek.
+
+### 6. Şifre sıfırlama — BEKLİYOR
 
 Ticari kullanıcı için güvenli tek kullanımlık şifre sıfırlama akışı eklenmeli. Reset tokenları kısa ömürlü ve tek kullanımlık olmalı.
 
-### 7. Admin lisans hareketlerini okunabilir hale getir
+Bu akış da e-posta gönderim katmanına bağlıdır; e-posta doğrulama ile aynı altyapı üzerinde birlikte uygulanacaktır.
 
-`license_events` yalnız DB seviyesinde değil, `ADMIN_LICENSE_SECRET` ile korunan salt-okunur bir yönetim endpointinden de denetlenebilmeli.
+### 7. Admin lisans hareketlerini okunabilir hale getir — KOD + ENTEGRASYON TESTİ TAMAMLANDI
 
-### 8. Socket.IO frontend bağımlılığını yerelleştir
+- `GET /api/admin/licenses/events?email=...&limit=...`
+- `ADMIN_LICENSE_SECRET` olmadan erişilemez
+- admin rate-limit katmanından geçer
+- e-posta doğrulanır, bulunmayan hesap `404` döndürür
+- en fazla 100 event döndürür
+- yalnız `publicAdvisor` alanları ile `license_events` audit verisi döner; password salt/hash dönmez
+- yanlış secret ve iki ardışık yıllık lisans olayı entegrasyon testinde doğrulandı
 
-PWA shell şu an Socket.IO client dosyasını CDN'den alıyor ve cache'liyor. Production'da aynı sürüm dosyasını frontend ile birlikte self-host etmek dış CDN bağımlılığını ve supply-chain yüzeyini azaltır.
+Staging üzerinde gerçek admin query smoke testi isteğe bağlı son operasyonel doğrulamadır.
+
+### 8. Socket.IO frontend bağımlılığını yerelleştir — BUILD + CI TAMAMLANDI
+
+- üçüncü taraf `cdn.socket.io` script etiketi kaldırıldı
+- frontend `socket.io-client` sürümünü `4.7.2` olarak sabitler
+- Netlify build sırasında `vendor/socket.io.min.js` yerel asset olarak üretilir
+- PWA service worker yerel vendor dosyasını shell cache'e alır
+- CI vendor dosyasını üretir ve CDN referansının geri gelmesini engeller
+
+Deploy Preview üzerinde normal çevrimiçi oturum smoke testi, deployment sonrası son doğrulamadır.
 
 ## P2 — Sonraki sertleştirme
 
@@ -105,4 +127,4 @@ PWA shell şu an Socket.IO client dosyasını CDN'den alıyor ve cache'liyor. Pr
 
 ## Merge kararı
 
-Staging pilotu kabul edilmiştir. P0/1, P0/2 ve P0/4 gerçek staging/cihaz koşullarında doğrulandı ve kabul edildi. Ana teknik production blokajı yalnızca P0/3 olan ayrı production PostgreSQL + gerçek backup/restore kurulumudur. Bu tamamlanmadan `ticari production güvenli` etiketi verilmez.
+Staging pilotu kabul edilmiştir. P0/1, P0/2 ve P0/4 gerçek staging/cihaz koşullarında doğrulandı ve kabul edildi. P1/7 ve P1/8 kod/CI düzeyinde tamamlandı. Ana teknik production blokajı P0/3 olan ayrı production PostgreSQL + gerçek backup/restore kurulumudur. E-posta doğrulama ve şifre sıfırlama ise ilk ücretli kullanıcı öncesi seçilecek mail altyapısıyla birlikte tamamlanacaktır.
