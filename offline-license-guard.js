@@ -61,13 +61,15 @@ document.addEventListener('DOMContentLoaded', () => {
   function setGuardDisabled(element, disabled) {
     if (!element) return;
     if (disabled) {
-      element.dataset.offlineGuardDisabled = 'true';
-      element.disabled = true;
+      if (element.dataset.offlineGuardDisabled !== 'true') {
+        element.dataset.offlineGuardDisabled = 'true';
+      }
+      if (!element.disabled) element.disabled = true;
       return;
     }
     if (element.dataset.offlineGuardDisabled === 'true') {
       delete element.dataset.offlineGuardDisabled;
-      element.disabled = false;
+      if (element.disabled) element.disabled = false;
     }
   }
 
@@ -131,14 +133,18 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  async function requireSignedEntitlement(event) {
-    const valid = await refresh({ network: navigator.onLine });
-    if (valid) return;
+  function requireSignedEntitlement(event) {
+    if (validEntitlement) return;
+
+    // Güvenlik kararı await beklemeden verilir; mevcut script.js handlerı çalışamaz.
     event.preventDefault();
     event.stopImmediatePropagation();
     if (offlineStatus) {
-      offlineStatus.textContent = 'Cihaz modu için geçerli imzalı çevrimdışı lisans yetkisi gerekir.';
+      offlineStatus.textContent = navigator.onLine
+        ? 'Çevrimdışı cihaz yetkisi doğrulanıyor. Doğrulama tamamlanınca tekrar deneyin.'
+        : 'Cihaz modu için geçerli imzalı çevrimdışı lisans yetkisi gerekir.';
     }
+    refresh({ network: navigator.onLine });
   }
 
   // Capture listener mevcut script.js click handlerından önce çalışır.
@@ -162,8 +168,8 @@ document.addEventListener('DOMContentLoaded', () => {
     if (document.visibilityState === 'visible') refresh({ network: navigator.onLine });
   });
 
-  // script.js bazı durumlarda disabled durumunu yeniden hesapladığı için yalnız ilgili
-  // element değişikliklerini gözleyip imzalı lisans kuralını tekrar uygularız.
+  // script.js bazı durumlarda disabled durumunu yeniden hesapladığı için güvenlik
+  // kuralını ilgili element değişikliklerinden sonra yeniden uygularız.
   const observer = new MutationObserver(() => queueMicrotask(renderGuardState));
   if (openOffline) observer.observe(openOffline, { attributes: true, attributeFilter: ['disabled'] });
   setButtons.forEach((button) => observer.observe(button, { attributes: true, attributeFilter: ['class'] }));
