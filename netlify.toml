@@ -2,8 +2,9 @@
   command = "node scripts/write-runtime-config.js"
   publish = "."
 
-[context.production.environment]
-  PERSONA_CARD_BACKEND_URL = "https://terapikart.onrender.com"
+# Production backend adresi repository içinde sabitlenmez.
+# Netlify Production ortamında PERSONA_CARD_BACKEND_URL açıkça tanımlanmalıdır.
+# Böylece V1.2 frontend yanlışlıkla eski/uyumsuz backend'e deploy edilmez.
 
 [context.deploy-preview.environment]
   PERSONA_CARD_BACKEND_URL = "https://persona-card-v12-staging-efaher.onrender.com"
