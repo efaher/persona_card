@@ -19,7 +19,7 @@ Bu belge 2026-08-29 tarihli V1.2 staging pilotu sonrasında production öncesi k
 - danışan davet secret'ı query parametresinden URL fragment'a taşındı
 - fragment içindeki token sayfa açılışında `sessionStorage`'a alınıp adres çubuğundan hemen temizleniyor; aynı sekmede reconnect destekleniyor
 - CI, danışan tokenının yeniden query parametresine taşınmasını statik guard ile engelliyor
-- staging deploy preview'da yeni fragment linki açıldı ve gizli tokenın adres çubuğundan temizlendiği gerçek cihazda doğrulandı (2026-08-29)
+- staging deploy preview'da yeni fragment linki açıldı, gizli token adres çubuğundan temizlendi ve danışanın seçtiği kartın danışman ekranına realtime ulaştığı gerçek cihazda doğrulandı (2026-08-29)
 - aktif yıllık lisans için backend tarafından en fazla 30 günlük Ed25519 imzalı çevrimdışı entitlement üretiliyor
 - frontend entitlement imzasını Web Crypto ile doğruluyor; `plan=annual` localStorage kaydı tek başına cihaz modunu açamıyor
 - staging hesabında imzalı çevrimdışı yetkinin `29.09.2026` tarihine kadar geçerli göründüğü, internet tamamen kapatıldıktan sonra cihaz modunun açıldığı ve kart seçiminin çalıştığı gerçek cihazda doğrulandı (2026-08-29)
@@ -38,7 +38,7 @@ Uygulanan varsayılanlar:
 
 Kod ve otomatik middleware testi başarılıdır. Production öncesi gerçek staging endpointinde kontrollü 429 smoke testi yapılacaktır.
 
-### 2. Danışan oturum tokenını URL query'den çıkar — STAGING TOKEN SCRUB DOĞRULANDI
+### 2. Danışan oturum tokenını URL query'den çıkar — STAGING DOĞRULANDI
 
 Yeni danışan linki:
 - `room` ve gizli `token` URL fragment (`#room=...&token=...`) içinde oluşturulur
@@ -48,7 +48,7 @@ Yeni danışan linki:
 - eski `?room=...&token=...` query linkleri yeni frontend tarafından davet olarak okunmaz
 - mevcut 6 saatlik backend oda süresi değişmedi
 
-Kod ve CI guard başarılıdır. Staging deploy preview'da gerçek cihazda token scrub doğrulandı (2026-08-29). Yeni fragment linki üzerinden realtime kart seçiminin danışman ekranına ulaştığı son smoke kontrolü bekliyor.
+Kod ve CI guard başarılıdır. Staging deploy preview'da gerçek cihazda token scrub ve yeni fragment bağlantısı üzerinden realtime kart seçiminin danışman ekranına ulaştığı doğrulandı (2026-08-29). P0/2 kabul edildi.
 
 ### 3. Production PostgreSQL + backup/restore
 
@@ -104,4 +104,4 @@ PWA shell şu an Socket.IO client dosyasını CDN'den alıyor ve cache'liyor. Pr
 
 ## Merge kararı
 
-Staging pilotu kabul edilmiştir. P0/1 kod seviyesinde tamamlandı. P0/2 token scrub gerçek cihazda doğrulandı; yalnız realtime seçim smoke kontrolü kaldı. P0/4 imzalı çevrimdışı lisans internet tamamen kapalı gerçek cihazda doğrulandı ve kabul edildi. Ana teknik production blokajı P0/3 olan ayrı production PostgreSQL + backup/restore kurulumudur. Bunlar tamamlanmadan `ticari production güvenli` etiketi verilmez.
+Staging pilotu kabul edilmiştir. P0/2 güvenli fragment bağlantısı ve realtime akış gerçek cihazda doğrulandı. P0/4 imzalı çevrimdışı lisans internet tamamen kapalı gerçek cihazda doğrulandı. P0/1 için yalnız gerçek staging 429 smoke testi kalmıştır. Ana teknik production blokajı P0/3 olan ayrı production PostgreSQL + backup/restore kurulumudur. Bunlar tamamlanmadan `ticari production güvenli` etiketi verilmez.
