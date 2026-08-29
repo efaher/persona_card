@@ -1,5 +1,5 @@
 [build]
-  command = "node scripts/write-runtime-config.js"
+  command = "npm run build"
   publish = "."
 
 # Production backend adresi repository içinde sabitlenmez.
