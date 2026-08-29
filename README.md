@@ -1,51 +1,80 @@
 # Persona Card
 
-Persona Card, online veya yüz yüze danışmanlık görüşmelerinde ihtiyaç halinde kullanılmak üzere tasarlanan görsel ifade kolaylaştırıcı bir kart çalışma aracıdır.
+Persona Card, online veya yüz yüze danışmanlık görüşmelerinde ihtiyaç halinde kullanılan görsel ifade ve çağrışım kolaylaştırıcı bir kart aracıdır.
 
 ## Temel ilke
 
 **Kartlar cevap vermez; konuşmayı kolaylaştırır.**
 
-Kartların sistem içinde önceden tanımlanmış psikolojik anlamları, puanları veya yorumları yoktur. Bir kartın danışan için ne ifade ettiği yalnızca danışanın kendi çağrışımı ve görüşme bağlamı içinde ele alınır.
+Kartlara sistem tarafından psikolojik anlam, puan, tanı veya yapay zekâ yorumu atanmaz. Bir kartın ne ifade ettiği danışanın kendi çağrışımı ve görüşme bağlamı içinde ele alınır.
 
-Persona Card bir psikolojik test, ölçek, tanı aracı veya tek başına bir seans yöntemi değildir. Danışmanın görüşme sırasında ihtiyaç duyduğunda kullanabileceği yardımcı bir araçtır.
+Persona Card bir psikolojik test, ölçek veya tek başına bir seans yöntemi değildir.
 
-## V1 kullanıcı akışı
+## V1.2 ürün modeli
 
-1. Danışman kart setini seçer.
-2. Danışman yeni bir kart çalışma oturumu oluşturur.
-3. Sistem danışana özel, güvenli bir katılım bağlantısı üretir.
-4. Danışan üyelik açmadan bağlantı üzerinden oturuma katılır.
-5. Danışan kendisine yakın gelen kartları seçer veya seçimini kaldırır.
-6. Danışmanın ekranı eş zamanlı olarak güncellenir.
+- Danışman hesap açar ve 3 ücretsiz çevrimiçi kart çalışmasıyla ürünü dener.
+- Ticari ürün aylık abonelik yerine **yıllık profesyonel lisans** olarak konumlandırılır.
+- Aktif yıllık lisans süresince çevrimiçi oturum hizmeti, bakım ve ürünün güncel sürümüne erişim sağlanır.
+- Danışan hesap açmaz; yalnızca danışmanın gönderdiği geçici oturum bağlantısından katılır.
+- Yıllık lisanslı danışman PWA'yı cihazına kurabilir ve kart galerisini cihaz modunda kullanabilir.
+- Çevrimiçi danışan bağlantısı internet gerektirir.
+
+Fiyat ve sözleşme metni kod içine sabitlenmez; ticari lansman öncesinde ayrıca belirlenir.
+
+## Kullanım akışı
+
+1. Danışman giriş yapar.
+2. Kart setini seçer.
+3. Çevrimiçi oturum oluşturur veya lisansı aktifse cihaz modunda kart galerisini açar.
+4. Çevrimiçi oturumda sistem danışana güvenli bir bağlantı üretir.
+5. Danışan üyelik açmadan bağlantıdan katılır ve kartlarını seçer.
+6. Danışman seçimleri eş zamanlı görür.
 7. Seçim sırası korunur.
-8. Seçimleri sıfırlama ve oturumu kapatma yetkisi yalnızca danışmandadır.
+8. Danışman oturumu kapatabilir veya seçimleri sıfırlayabilir.
+
+## Güvenli danışan bağlantısı
+
+V1.2'de gizli danışan katılım tokenı URL query parametresinde taşınmaz. Yeni davet bağlantısı `#room=...&token=...` fragment biçimindedir.
+
+- URL fragment HTTP request path/query ile sunucuya gönderilmez.
+- Sayfa açıldığında token aynı sekmenin `sessionStorage` alanına alınır.
+- Token adres çubuğundan hemen temizlenir; yalnız oda kodu görünür kalır.
+- Eski `?room=...&token=...` query linkleri davet olarak kabul edilmez.
+- Aynı sekmedeki kısa süreli reconnect desteklenir.
+
+## PWA ve çevrimdışı hazırlık
+
+V1.2 ile `manifest.webmanifest` ve `service-worker.js` eklenmiştir. Destekleyen tarayıcılarda Persona Card ana ekrana/masaüstüne kurulabilir.
+
+Aktif yıllık lisanslı danışman iki kart setindeki toplam 121 kartı cihaz önbelleğine indirebilir. Cihaz modu bu kartlarla yerel çalışır; realtime danışan bağlantısı çevrimiçi hizmettir.
 
 ## Kart setleri
 
 - `personita`: 77 kart
 - `terapi_sb`: 44 siyah-beyaz kart
 
-## V1 teknik yapı
+## Teknik yapı
 
-- Frontend: statik HTML/CSS/JavaScript
-- Realtime iletişim: Socket.IO
+- Frontend: statik HTML/CSS/JavaScript + PWA
+- Realtime: Socket.IO
 - Backend: `efaher/terapikart-backend`
-- V1 geliştirme dalı: `v1-commercial-foundation`
+- Hesap ve lisans durumu: backend + PostgreSQL
+- Geliştirme dalı: `v1.2-annual-license-pwa`
 
-## V1 kapsamında özellikle bulunmayanlar
+## Ürün prensibi gereği bulunmayanlar
 
 - Kartlara otomatik anlam atama
 - Yapay zekâ ile kart yorumlama
 - Puanlama / ölçek sonucu
 - Tanı önerisi
-- Danışan dosyası veya terapi notu saklama
-- Ödeme / lisans sistemi
+- Danışan terapi notu veya psikolojik profil kaydı
 
-Bu özelliklerden ilk dört madde ürün prensibi gereği planlanmamaktadır. Kullanıcı hesabı ve ticari lisanslama, çekirdek oturum akışı doğrulandıktan sonra ticari sürüm aşamasında eklenecektir.
+## Ticari yayın öncesi zorunlu işler
 
-## Ticari hedef
-
-Projenin hedefi, danışmanların düşük maliyetli bir lisansla kullanabildiği; danışanın ise hesap açmadan yalnızca oturum bağlantısıyla katıldığı, sade ve güvenilir bir profesyonel yardımcı araç haline gelmektir.
-
-Ticari yayın öncesinde ayrıca kart görsellerinin dijital/ticari kullanım hakları, KVKK yükümlülükleri, kullanıcı sözleşmesi, gizlilik metni, lisanslama ve ödeme altyapısı tamamlanacaktır.
+- Kart görsellerinin dijital/ticari kullanım haklarının kesinleştirilmesi
+- KVKK ve gizlilik metinlerinin hazırlanması
+- Kullanım/lisans ve hizmet taahhüdü sözleşmesinin hazırlanması
+- Yıllık lisans ödeme ve yenileme akışının bağlanması
+- Production PostgreSQL ve yedek/geri yükleme planının doğrulanması
+- Offline cihaz modu lisans yetkisinin imzalı entitlement ile sertleştirilmesi
+- `efia.net.tr` altında üretim alan adının kurulması

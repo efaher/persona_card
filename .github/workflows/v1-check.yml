@@ -1,13 +1,13 @@
-name: Persona Card V1 Checks
+name: Persona Card Frontend Checks
 
 on:
   push:
-    branches: [v1-commercial-foundation]
+    branches: [v1.2-annual-license-pwa]
   pull_request:
     branches: [main]
 
 jobs:
-  javascript-syntax:
+  frontend-check:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -16,5 +16,67 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '20'
-      - name: Check script syntax
-        run: node --check script.js
+      - name: Install frontend dependency
+        run: npm install --no-audit --no-fund
+      - name: Check application JavaScript
+        run: npm run check
+      - name: Build staging frontend assets
+        env:
+          CONTEXT: deploy-preview
+          PERSONA_CARD_BACKEND_URL: https://persona-card-v12-staging-efaher.onrender.com
+        run: npm run build
+      - name: Enforce self-hosted Socket.IO client
+        run: |
+          test -s vendor/socket.io.min.js
+          grep -F 'vendor/socket.io.min.js' index.html
+          if grep -R -F 'cdn.socket.io' index.html service-worker.js; then
+            echo "Socket.IO client üçüncü taraf CDN'den yüklenmemeli."
+            exit 1
+          fi
+          echo "Self-hosted Socket.IO guard ok"
+      - name: Check account security frontend
+        run: |
+          grep -F 'account-security.js' index.html
+          grep -F '/account-security.js' service-worker.js
+          grep -F "hashParams.get('verify-email')" account-security.js
+          grep -F "hashParams.get('reset-password')" account-security.js
+          grep -F '/api/auth/password-reset/request' account-security.js
+          grep -F '/api/auth/password-reset/confirm' account-security.js
+          grep -F '/api/auth/email-verification/request' account-security.js
+          grep -F '/api/auth/email-verification/confirm' account-security.js
+          grep -F 'data-persona-account-action' account-security.js
+          grep -F "forgotButton.className = 'text-button'" account-security.js
+          if grep -F 'visibilityObserver' account-security.js; then
+            echo "Hesap kurtarma görünürlük döngüsü geri eklenmemeli."
+            exit 1
+          fi
+          echo "Account security frontend guard ok"
+      - name: Check offline license JavaScript
+        run: |
+          grep -F 'offline-entitlement.js' index.html
+          grep -F 'offline-license-guard.js' index.html
+          grep -F '/api/offline-entitlement' offline-license-guard.js
+          echo "Signed offline license guard ok"
+      - name: Enforce fragment-only client invite secret
+        run: |
+          if grep -F "searchParams.set('token'" script.js; then
+            echo "Client invite token URL query parametresine geri dönmemeli."
+            exit 1
+          fi
+          grep -F "window.location.hash" script.js
+          grep -F "inviteUrl.hash = fragment.toString()" script.js
+          echo "Client invite fragment guard ok"
+      - name: Reject legacy backend in production
+        run: |
+          if CONTEXT=production PERSONA_CARD_BACKEND_URL=https://terapikart.onrender.com node scripts/write-runtime-config.js; then
+            echo "Production guard eski backend'i reddetmeliydi."
+            exit 1
+          fi
+          echo "Production legacy-backend guard ok"
+      - name: Accept explicit HTTPS V1.2 backend in production
+        env:
+          CONTEXT: production
+          PERSONA_CARD_BACKEND_URL: https://persona-card-production.example.com
+        run: node scripts/write-runtime-config.js && node --check runtime-config.js
+      - name: Validate PWA manifest JSON
+        run: node -e "JSON.parse(require('fs').readFileSync('manifest.webmanifest','utf8')); console.log('manifest ok')"

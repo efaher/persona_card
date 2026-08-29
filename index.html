@@ -3,27 +3,96 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Persona Card - online danışmanlıkta görsel ifade kolaylaştırıcı kart çalışma aracı">
+  <meta name="description" content="Persona Card - seanslarda görsel ifade ve çağrışımı kolaylaştıran dijital kart aracı">
+  <meta name="referrer" content="no-referrer">
+  <meta name="theme-color" content="#4d675d">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="Persona Card">
   <title>Persona Card</title>
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="icons/persona-card-icon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
   <main class="app-shell">
     <header class="hero">
       <div>
-        <p class="eyebrow">V1 · Online danışmanlık yardımcı aracı</p>
+        <p class="eyebrow">Seans kolaylaştırıcı dijital araç</p>
         <h1>Persona Card</h1>
         <p class="tagline">Kartlar cevap vermez; konuşmayı kolaylaştırır.</p>
       </div>
       <div id="connection-badge" class="badge badge-waiting">Bağlanıyor</div>
     </header>
 
-    <section id="advisor-start" class="panel">
+    <section id="auth-panel" class="panel hidden">
       <div class="panel-heading">
         <div>
-          <p class="section-kicker">Danışman</p>
-          <h2>Kart çalışması başlat</h2>
+          <p class="section-kicker">Danışman hesabı</p>
+          <h2>Persona Card'a giriş yapın</h2>
         </div>
+      </div>
+      <p class="muted">Yeni hesaplar 3 ücretsiz kart çalışmasıyla başlar. Danışanlar hesap açmadan yalnızca kendilerine gönderilen bağlantıdan katılır.</p>
+
+      <div class="auth-tabs" role="tablist">
+        <button id="show-login" class="auth-tab active" type="button">Giriş Yap</button>
+        <button id="show-register" class="auth-tab" type="button">Ücretsiz Başla</button>
+      </div>
+
+      <form id="login-form" class="auth-form">
+        <label>E-posta
+          <input id="login-email" type="email" autocomplete="email" required>
+        </label>
+        <label>Şifre
+          <input id="login-password" type="password" autocomplete="current-password" minlength="8" required>
+        </label>
+        <button class="primary-button" type="submit">Giriş Yap</button>
+      </form>
+
+      <form id="register-form" class="auth-form hidden">
+        <label>Ad Soyad
+          <input id="register-name" type="text" autocomplete="name" minlength="2" maxlength="80" required>
+        </label>
+        <label>E-posta
+          <input id="register-email" type="email" autocomplete="email" required>
+        </label>
+        <label>Şifre
+          <input id="register-password" type="password" autocomplete="new-password" minlength="8" maxlength="128" required>
+        </label>
+        <p class="form-note">En az 8 karakter. Kart seçimi dışında danışana ait görüşme notu veya psikolojik veri saklanmaz.</p>
+        <button class="primary-button" type="submit">Hesap Oluştur</button>
+      </form>
+      <p id="auth-message" class="form-message" aria-live="polite"></p>
+    </section>
+
+    <section id="advisor-start" class="panel hidden">
+      <div class="account-bar">
+        <div>
+          <p class="section-kicker">Danışman paneli</p>
+          <h2 id="advisor-name">Kart çalışması başlat</h2>
+          <p id="account-status" class="muted account-status"></p>
+        </div>
+        <button id="logout-button" class="text-button" type="button">Çıkış Yap</button>
+      </div>
+
+      <div id="trial-card" class="trial-card">
+        <div>
+          <strong id="trial-title">3 ücretsiz çalışma</strong>
+          <p id="trial-description" class="muted">Lisans almadan önce Persona Card'ı gerçek görüşmelerinizde deneyebilirsiniz.</p>
+        </div>
+        <span id="trial-count" class="trial-count">3</span>
+      </div>
+
+      <div class="install-card">
+        <div>
+          <strong>Uygulama gibi kullanın</strong>
+          <p class="muted">Persona Card'ı telefonunuza veya bilgisayarınıza kurabilir, yıllık lisansınız aktifken kartları cihazda da kullanabilirsiniz.</p>
+        </div>
+        <div class="install-actions">
+          <button id="install-app" class="secondary-button hidden" type="button">Uygulamayı Kur</button>
+          <button id="prepare-offline" class="secondary-button" type="button">Kartları Cihaza İndir</button>
+        </div>
+        <p id="offline-status" class="form-note">Çevrimiçi danışan bağlantısı internet gerektirir.</p>
       </div>
 
       <p class="muted">Seansın ihtiyaç duyduğunuz anında bir kart seti seçin. Danışan bağlantıdan katılır ve kartları kendi çağrışımına göre seçer.</p>
@@ -41,7 +110,12 @@
         </button>
       </div>
 
-      <button id="create-session" class="primary-button" type="button" disabled>Oturum Oluştur</button>
+      <div class="launch-actions">
+        <button id="create-session" class="primary-button" type="button" disabled>Çevrimiçi Oturum Oluştur</button>
+        <button id="open-offline" class="secondary-button" type="button" disabled>Cihazda Kartları Aç</button>
+      </div>
+      <p class="form-note">Cihaz modunu açmak için önce yukarıdan bir kart seti seçin.</p>
+      <p id="license-message" class="form-message"></p>
     </section>
 
     <section id="client-joining" class="panel hidden">
@@ -72,6 +146,14 @@
         </div>
       </div>
 
+      <div id="offline-tools" class="advisor-tools hidden">
+        <p class="muted">Bu modda kartlar yalnızca bu cihazda kullanılır. Danışana bağlantı gönderilmez.</p>
+        <div class="action-row">
+          <button id="offline-reset" class="secondary-button" type="button">Seçimleri Sıfırla</button>
+          <button id="offline-close" class="secondary-button" type="button">Kart Galerisinden Çık</button>
+        </div>
+      </div>
+
       <div class="workspace-heading">
         <div>
           <h3 id="active-set-name">Kartlar</h3>
@@ -86,7 +168,7 @@
         <h3>Seçilen kartlar</h3>
         <p class="muted">Seçim sırası korunur. Sistem kartlara herhangi bir anlam veya yorum yüklemez.</p>
         <div id="selected-cards" class="selected-grid">
-          <p id="empty-selection" class="empty-state">Henüz kart seçilmedi.</p>
+          <p class="empty-state">Henüz kart seçilmedi.</p>
         </div>
       </div>
     </section>
@@ -94,7 +176,12 @@
     <div id="toast" class="toast hidden" role="status" aria-live="polite"></div>
   </main>
 
-  <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+  <script src="vendor/socket.io.min.js"></script>
+  <script src="runtime-config.js"></script>
+  <script src="backend-router.js"></script>
+  <script src="account-security.js"></script>
   <script src="script.js"></script>
+  <script src="offline-entitlement.js"></script>
+  <script src="offline-license-guard.js"></script>
 </body>
 </html>
