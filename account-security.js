@@ -23,8 +23,6 @@
 
     const authPanel = document.getElementById('auth-panel');
     const advisorStart = document.getElementById('advisor-start');
-    const clientJoining = document.getElementById('client-joining');
-    const sessionPanel = document.getElementById('session-panel');
     const loginForm = document.getElementById('login-form');
     const loginEmail = document.getElementById('login-email');
     const trialCard = document.getElementById('trial-card');
@@ -34,16 +32,29 @@
 
     if (!authPanel || !advisorStart || !loginForm || !BACKEND_URL) return;
 
-    let actionActive = Boolean(initialAction);
     let mailConfigured = false;
     let emailVerificationRequired = false;
     let currentAdvisor = null;
     let actionToken = initialAction?.token || null;
 
+    const actionStyle = document.createElement('style');
+    actionStyle.textContent = `
+      html[data-persona-account-action="active"] #auth-panel,
+      html[data-persona-account-action="active"] #advisor-start,
+      html[data-persona-account-action="active"] #client-joining,
+      html[data-persona-account-action="active"] #session-panel {
+        display: none !important;
+      }
+      html[data-persona-account-action="active"] #account-action-panel {
+        display: block !important;
+      }
+    `;
+    document.head.appendChild(actionStyle);
+
     const forgotButton = document.createElement('button');
     forgotButton.id = 'forgot-password';
     forgotButton.type = 'button';
-    forgotButton.className = 'text-button hidden';
+    forgotButton.className = 'text-button';
     forgotButton.textContent = 'Şifremi unuttum';
     loginForm.appendChild(forgotButton);
 
@@ -129,6 +140,16 @@
       return data;
     }
 
+    function setActionMode(active) {
+      if (active) {
+        document.documentElement.dataset.personaAccountAction = 'active';
+        actionPanel.classList.remove('hidden');
+      } else {
+        delete document.documentElement.dataset.personaAccountAction;
+        actionPanel.classList.add('hidden');
+      }
+    }
+
     function clearAccountAuth() {
       localStorage.removeItem(AUTH_TOKEN_KEY);
       localStorage.removeItem(ADVISOR_CACHE_KEY);
@@ -140,56 +161,51 @@
       if (data?.advisor) localStorage.setItem(ADVISOR_CACHE_KEY, JSON.stringify(data.advisor));
     }
 
-    function enforceActionPanel() {
-      if (!actionActive) return;
-      authPanel.classList.add('hidden');
-      advisorStart.classList.add('hidden');
-      clientJoining?.classList.add('hidden');
-      sessionPanel?.classList.add('hidden');
-      actionPanel.classList.remove('hidden');
-    }
-
     function finishActionAndReload() {
       const url = new URL(window.location.href);
       url.hash = '';
       window.location.replace(url.toString());
     }
 
+    function resetActionMessageState() {
+      actionMessage.textContent = '';
+      delete actionMessage.dataset.completed;
+      backButton.classList.remove('hidden');
+    }
+
     function renderResetRequest() {
-      actionActive = true;
       actionToken = null;
+      resetActionMessageState();
       requestForm.classList.remove('hidden');
       confirmForm.classList.add('hidden');
       actionTitle.textContent = 'Şifrenizi sıfırlayın';
       actionDescription.textContent = 'Hesabınızın e-posta adresine tek kullanımlık bir şifre sıfırlama bağlantısı göndereceğiz.';
-      actionMessage.textContent = '';
       requestEmail.value = loginEmail?.value || '';
       backButton.textContent = 'Giriş ekranına dön';
-      enforceActionPanel();
-      requestEmail.focus();
+      setActionMode(true);
+      window.requestAnimationFrame(() => requestEmail.focus());
     }
 
     function renderResetConfirm() {
-      actionActive = true;
+      resetActionMessageState();
       requestForm.classList.add('hidden');
       confirmForm.classList.remove('hidden');
       actionTitle.textContent = 'Yeni şifre belirleyin';
       actionDescription.textContent = 'Yeni şifrenizi iki kez girin. Bağlantı tek kullanımlıktır.';
-      actionMessage.textContent = '';
       backButton.textContent = 'Giriş ekranına dön';
-      enforceActionPanel();
-      newPassword.focus();
+      setActionMode(true);
+      window.requestAnimationFrame(() => newPassword.focus());
     }
 
     function renderVerificationConfirm() {
-      actionActive = true;
+      resetActionMessageState();
       requestForm.classList.add('hidden');
       confirmForm.classList.add('hidden');
       actionTitle.textContent = 'E-posta doğrulanıyor';
       actionDescription.textContent = 'Persona Card hesabınızın e-posta adresi doğrulanıyor.';
       actionMessage.textContent = 'Doğrulanıyor...';
       backButton.classList.add('hidden');
-      enforceActionPanel();
+      setActionMode(true);
     }
 
     function updateVerificationCard() {
@@ -223,13 +239,16 @@
       button?.addEventListener('click', blockUnverifiedFeature, true);
     });
 
-    forgotButton.addEventListener('click', renderResetRequest);
+    forgotButton.addEventListener('click', (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+      renderResetRequest();
+    });
 
     backButton.addEventListener('click', () => {
       if (actionMessage.dataset.completed === 'true') return finishActionAndReload();
-      actionActive = false;
       actionToken = null;
-      actionPanel.classList.add('hidden');
+      setActionMode(false);
       authPanel.classList.remove('hidden');
     });
 
@@ -326,9 +345,8 @@
         const health = await api('/health', { token: null });
         mailConfigured = Boolean(health.mailConfigured);
         emailVerificationRequired = Boolean(health.emailVerificationRequired);
-        forgotButton.classList.toggle('hidden', !mailConfigured);
       } catch {
-        forgotButton.classList.add('hidden');
+        mailConfigured = false;
       }
 
       if (authToken()) {
@@ -348,13 +366,10 @@
       }
     }
 
-    const visibilityObserver = new MutationObserver(() => {
-      if (actionActive) enforceActionPanel();
+    const advisorObserver = new MutationObserver(() => {
       if (!advisorStart.classList.contains('hidden')) refreshCapabilities();
     });
-    [authPanel, advisorStart, clientJoining, sessionPanel].filter(Boolean).forEach((panel) => {
-      visibilityObserver.observe(panel, { attributes: true, attributeFilter: ['class'] });
-    });
+    advisorObserver.observe(advisorStart, { attributes: true, attributeFilter: ['class'] });
 
     if (initialAction?.type === 'reset-password') {
       renderResetConfirm();
