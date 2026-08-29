@@ -28,6 +28,13 @@ Bu belge 2026-08-29 tarihli V1.2 staging pilotu sonrasında production öncesi k
 - audit endpointi için yanlış secret `401`, doğru secret ile aktivasyon/yenileme event sırası entegrasyon testinde doğrulandı
 - Socket.IO client üçüncü taraf CDN'den kaldırıldı; frontend build sırasında sabit `socket.io-client@4.7.2` paketinden `vendor/socket.io.min.js` üretiliyor ve PWA shell içinde yerel olarak cache'leniyor
 - CI, `cdn.socket.io` kullanımının tekrar eklenmesini ve vendor dosyasının üretilmemesini engelliyor
+- hesap doğrulama ve şifre sıfırlama tokenları kriptografik rastgele üretiliyor; veritabanında yalnız SHA-256 hashleri tutuluyor
+- e-posta doğrulama tokenı 24 saat, şifre sıfırlama tokenı 60 dakika geçerli ve tek kullanımlı
+- yeni token üretildiğinde aynı amaçlı önceki kullanılmamış token geçersizleştiriliyor
+- şifre sıfırlandığında `auth_version` artırılıyor; eski oturum tokenları artık hesapla eşleşmiyor
+- şifre sıfırlama talebi, hesap var/yok bilgisini dışarı sızdırmayan genel yanıt kullanıyor
+- hesap güvenliği frontend modülü doğrulama/reset tokenlarını URL fragmentından alıp adres çubuğundan anında temizliyor
+- SMTP/mail hizmeti yapılandırılmadığında staging akışı değişmiyor; `REQUIRE_EMAIL_VERIFICATION=false` ile mevcut pilot kullanımı korunuyor
 
 ## P0 — Ticari production öncesi tamamlanmalı
 
@@ -82,17 +89,30 @@ Staging gerçek cihaz doğrulaması: imzalı cihaz yetkisi `29.09.2026` tarihine
 
 ## P1 — İlk ücretli kullanıcıdan önce güçlü biçimde önerilir
 
-### 5. E-posta doğrulama — BEKLİYOR
+### 5. E-posta doğrulama — KOD + CI TAMAMLANDI, GERÇEK E-POSTA TESTİ BEKLİYOR
 
-E-posta lisans kimliği olarak kullanılacaksa hesap sahibinin e-postayı doğruladığı kanıtlanmalı. Aksi halde başka bir kişinin adresiyle hesap açılabilir.
+Uygulanan model:
+- backend sağlayıcıdan bağımsız SMTP katmanı kullanır
+- doğrulama tokenı 32-byte rastgele üretilir ve veritabanında yalnız SHA-256 hash olarak saklanır
+- token 24 saatlik ve tek kullanımlıdır
+- doğrulama bağlantısı `#verify-email=...` fragmentı kullanır; frontend tokenı görünür URL'den anında temizler
+- `publicAdvisor` yalnız `emailVerified` boolean alanını dışarı verir
+- production'da istenirse `REQUIRE_EMAIL_VERIFICATION=true` ile online/cihaz özellikleri doğrulama tamamlanana kadar engellenebilir
+- staging'de bu bayrak varsayılan olarak kapalıdır
 
-Bu iş güvenli mail gönderim katmanı gerektirir. SMTP/posta sağlayıcısı seçilmeden kullanıcı akışına yarım bir doğrulama sistemi eklenmeyecek.
+Kalan kabul: gerçek SMTP bilgileri tanımlandıktan sonra bir doğrulama e-postasının teslimi ve bağlantının gerçek tarayıcıda tek kullanımlı çalışması doğrulanacak.
 
-### 6. Şifre sıfırlama — BEKLİYOR
+### 6. Şifre sıfırlama — KOD + CI TAMAMLANDI, GERÇEK E-POSTA TESTİ BEKLİYOR
 
-Ticari kullanıcı için güvenli tek kullanımlık şifre sıfırlama akışı eklenmeli. Reset tokenları kısa ömürlü ve tek kullanımlık olmalı.
+Uygulanan model:
+- reset talebi hesap var/yok bilgisini dışarı sızdırmayan genel mesaj döndürür
+- reset tokenı veritabanında yalnız hash olarak tutulur; 60 dakika geçerli ve tek kullanımlıdır
+- bağlantı `#reset-password=...` fragmentı kullanır ve token adres çubuğundan hemen temizlenir
+- frontend yeni şifreyi iki kez ister
+- başarılı reset sonrası `auth_version` artar; daha önce verilmiş auth tokenları geçersiz kalır
+- şifreler yine `scrypt` ile hashlenir
 
-Bu akış da e-posta gönderim katmanına bağlıdır; e-posta doğrulama ile aynı altyapı üzerinde birlikte uygulanacaktır.
+Kalan kabul: gerçek SMTP ile reset e-postası teslimi, yeni şifreyle giriş ve eski şifrenin reddi staging'de smoke test edilecek.
 
 ### 7. Admin lisans hareketlerini okunabilir hale getir — KOD + ENTEGRASYON TESTİ TAMAMLANDI
 
@@ -103,6 +123,7 @@ Bu akış da e-posta gönderim katmanına bağlıdır; e-posta doğrulama ile ay
 - en fazla 100 event döndürür
 - yalnız `publicAdvisor` alanları ile `license_events` audit verisi döner; password salt/hash dönmez
 - yanlış secret ve iki ardışık yıllık lisans olayı entegrasyon testinde doğrulandı
+- `npm run license:events -- danisman@example.com 20` komutu operasyonel sorgu için eklendi
 
 Staging üzerinde gerçek admin query smoke testi isteğe bağlı son operasyonel doğrulamadır.
 
@@ -113,18 +134,19 @@ Staging üzerinde gerçek admin query smoke testi isteğe bağlı son operasyone
 - Netlify build sırasında `vendor/socket.io.min.js` yerel asset olarak üretilir
 - PWA service worker yerel vendor dosyasını shell cache'e alır
 - CI vendor dosyasını üretir ve CDN referansının geri gelmesini engeller
+- güncel Deploy Preview başarıyla yayımlandı
 
-Deploy Preview üzerinde normal çevrimiçi oturum smoke testi, deployment sonrası son doğrulamadır.
+Normal çevrimiçi oturum smoke testi, deployment sonrası son kullanıcı doğrulamasıdır.
 
 ## P2 — Sonraki sertleştirme
 
 - Content Security Policy'yi production domainleri kesinleşince dar allowlist ile etkinleştir
 - auth ve admin güvenlik olaylarını minimum kişisel veriyle logla
-- dependency update/dependabot süreci kur
+- dependency update/Dependabot süreci kuruldu; açılan PR'lar otomatik merge edilmez
 - secret rotation prosedürü yaz
 - rate-limit state'i birden fazla backend instance kullanılacaksa ortak store'a taşı
 - periyodik backup restore tatbikatı ve olay müdahale kontrol listesi oluştur
 
 ## Merge kararı
 
-Staging pilotu kabul edilmiştir. P0/1, P0/2 ve P0/4 gerçek staging/cihaz koşullarında doğrulandı ve kabul edildi. P1/7 ve P1/8 kod/CI düzeyinde tamamlandı. Ana teknik production blokajı P0/3 olan ayrı production PostgreSQL + gerçek backup/restore kurulumudur. E-posta doğrulama ve şifre sıfırlama ise ilk ücretli kullanıcı öncesi seçilecek mail altyapısıyla birlikte tamamlanacaktır.
+Staging pilotu kabul edilmiştir. P0/1, P0/2 ve P0/4 gerçek staging/cihaz koşullarında doğrulandı ve kabul edildi. P1/5, P1/6, P1/7 ve P1/8 kod/CI düzeyinde tamamlandı. E-posta doğrulama ve şifre sıfırlamada yalnız gerçek SMTP teslim/smoke testi bekliyor. Ana ücretli teknik production blokajı P0/3 olan ayrı production PostgreSQL + gerçek backup/restore kurulumudur.
