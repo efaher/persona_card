@@ -19,6 +19,7 @@ Bu belge 2026-08-29 tarihli V1.2 staging pilotu sonrasında production öncesi k
 - danışan davet secret'ı query parametresinden URL fragment'a taşındı
 - fragment içindeki token sayfa açılışında `sessionStorage`'a alınıp adres çubuğundan hemen temizleniyor; aynı sekmede reconnect destekleniyor
 - CI, danışan tokenının yeniden query parametresine taşınmasını statik guard ile engelliyor
+- staging deploy preview'da yeni fragment linki açıldı ve gizli tokenın adres çubuğundan temizlendiği gerçek cihazda doğrulandı (2026-08-29)
 
 ## P0 — Ticari production öncesi tamamlanmalı
 
@@ -34,7 +35,7 @@ Uygulanan varsayılanlar:
 
 Kod ve otomatik middleware testi başarılıdır. Production öncesi gerçek staging endpointinde kontrollü 429 smoke testi yapılacaktır.
 
-### 2. Danışan oturum tokenını URL query'den çıkar — KOD TAMAMLANDI
+### 2. Danışan oturum tokenını URL query'den çıkar — STAGING TOKEN SCRUB DOĞRULANDI
 
 Yeni danışan linki:
 - `room` ve gizli `token` URL fragment (`#room=...&token=...`) içinde oluşturulur
@@ -44,7 +45,7 @@ Yeni danışan linki:
 - eski `?room=...&token=...` query linkleri yeni frontend tarafından davet olarak okunmaz
 - mevcut 6 saatlik backend oda süresi değişmedi
 
-Kod ve CI guard başarılıdır. Production öncesi staging deploy preview'da iki cihazlı yeni-link smoke testi yapılacaktır.
+Kod ve CI guard başarılıdır. Staging deploy preview'da gerçek cihazda token scrub doğrulandı (2026-08-29). Yeni fragment linki üzerinden realtime kart seçiminin danışman ekranına ulaştığı son smoke kontrolü bekliyor.
 
 ### 3. Production PostgreSQL + backup/restore
 
@@ -98,4 +99,4 @@ PWA shell şu an Socket.IO client dosyasını CDN'den alıyor ve cache'liyor. Pr
 
 ## Merge kararı
 
-Staging pilotu kabul edilmiştir. P0/1 ve P0/2 kod seviyesinde tamamlandı; staging smoke doğrulaması bekliyor. P0/3 production maliyetli altyapı kurulumuna, P0/4 ise offline lisans sertleştirmesine bağlıdır. Bunlar tamamlanmadan "ticari production güvenli" etiketi verilmez.
+Staging pilotu kabul edilmiştir. P0/1 kod seviyesinde tamamlandı. P0/2 token scrub gerçek cihazda doğrulandı; yalnız realtime seçim smoke kontrolü kaldı. P0/3 production maliyetli altyapı kurulumuna, P0/4 ise offline lisans sertleştirmesine bağlıdır. Bunlar tamamlanmadan "ticari production güvenli" etiketi verilmez.
