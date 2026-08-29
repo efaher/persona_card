@@ -16,17 +16,18 @@ Bu belge 2026-08-29 tarihli V1.2 staging pilotu sonrasında production öncesi k
 - auth/admin endpointleri bağımlılıksız rate-limit middleware ile korunuyor; limit aşımı `429 RATE_LIMITED` + `Retry-After` döndürüyor
 - Render üzerinde gerçek istemci IP'si için Cloudflare tarafından yazılan `CF-Connecting-IP` öncelikli kullanılıyor; `X-Forwarded-For` yalnız fallback
 - login/register için IP tabanlı ortak limit; login için e-posta içeren ayrı limit; admin lisans endpointi için ayrı limit bulunuyor
+- staging login endpointinde sahte test hesabıyla 10 hatalı giriş `401`, 11. istek `429 Too Many Requests` döndürdü; rate-limit gerçek Render staging üzerinde doğrulandı (2026-08-29)
 - danışan davet secret'ı query parametresinden URL fragment'a taşındı
 - fragment içindeki token sayfa açılışında `sessionStorage`'a alınıp adres çubuğundan hemen temizleniyor; aynı sekmede reconnect destekleniyor
 - CI, danışan tokenının yeniden query parametresine taşınmasını statik guard ile engelliyor
-- staging deploy preview'da yeni fragment linki açıldı, gizli token adres çubuğundan temizlendi ve danışanın seçtiği kartın danışman ekranına realtime ulaştığı gerçek cihazda doğrulandı (2026-08-29)
+- staging deploy preview'da yeni fragment linki açıldı, gizli token adres çubuğundan temizlendi ve danışanın seçtiği kart danışman ekranına realtime ulaştı (2026-08-29)
 - aktif yıllık lisans için backend tarafından en fazla 30 günlük Ed25519 imzalı çevrimdışı entitlement üretiliyor
 - frontend entitlement imzasını Web Crypto ile doğruluyor; `plan=annual` localStorage kaydı tek başına cihaz modunu açamıyor
 - staging hesabında imzalı çevrimdışı yetkinin `29.09.2026` tarihine kadar geçerli göründüğü, internet tamamen kapatıldıktan sonra cihaz modunun açıldığı ve kart seçiminin çalıştığı gerçek cihazda doğrulandı (2026-08-29)
 
 ## P0 — Ticari production öncesi tamamlanmalı
 
-### 1. Kimlik doğrulama rate limit — KOD TAMAMLANDI
+### 1. Kimlik doğrulama rate limit — STAGING DOĞRULANDI
 
 Uygulanan varsayılanlar:
 - auth IP ortak pencere: 15 dakika / 60 istek
@@ -36,9 +37,9 @@ Uygulanan varsayılanlar:
 - limit aşımında genel `429 RATE_LIMITED`, `Retry-After` ve rate-limit response headerları
 - değerler environment variable ile değiştirilebilir
 
-Kod ve otomatik middleware testi başarılıdır. Production öncesi gerçek staging endpointinde kontrollü 429 smoke testi yapılacaktır.
+Kod ve otomatik middleware testi başarılıdır. Gerçek Render staging login endpointinde sahte test e-postasıyla yapılan kontrollü smoke testte ilk 10 hatalı giriş `401`, 11. istek `429 Too Many Requests` döndürdü. P0/1 kabul edildi.
 
-### 2. Danışan oturum tokenını URL query'den çıkar — STAGING DOĞRULANDI
+### 2. Danışan oturum tokenını URL query'den çıkar — STAGING REALTIME DOĞRULANDI
 
 Yeni danışan linki:
 - `room` ve gizli `token` URL fragment (`#room=...&token=...`) içinde oluşturulur
@@ -48,7 +49,7 @@ Yeni danışan linki:
 - eski `?room=...&token=...` query linkleri yeni frontend tarafından davet olarak okunmaz
 - mevcut 6 saatlik backend oda süresi değişmedi
 
-Kod ve CI guard başarılıdır. Staging deploy preview'da gerçek cihazda token scrub ve yeni fragment bağlantısı üzerinden realtime kart seçiminin danışman ekranına ulaştığı doğrulandı (2026-08-29). P0/2 kabul edildi.
+Kod ve CI guard başarılıdır. Staging deploy preview'da gerçek cihazda token scrub ve yeni fragment linki üzerinden realtime kart seçiminin danışman ekranına ulaştığı doğrulandı (2026-08-29). P0/2 kabul edildi.
 
 ### 3. Production PostgreSQL + backup/restore
 
@@ -104,4 +105,4 @@ PWA shell şu an Socket.IO client dosyasını CDN'den alıyor ve cache'liyor. Pr
 
 ## Merge kararı
 
-Staging pilotu kabul edilmiştir. P0/2 güvenli fragment bağlantısı ve realtime akış gerçek cihazda doğrulandı. P0/4 imzalı çevrimdışı lisans internet tamamen kapalı gerçek cihazda doğrulandı. P0/1 için yalnız gerçek staging 429 smoke testi kalmıştır. Ana teknik production blokajı P0/3 olan ayrı production PostgreSQL + backup/restore kurulumudur. Bunlar tamamlanmadan `ticari production güvenli` etiketi verilmez.
+Staging pilotu kabul edilmiştir. P0/1, P0/2 ve P0/4 gerçek staging/cihaz koşullarında doğrulandı ve kabul edildi. Ana teknik production blokajı yalnızca P0/3 olan ayrı production PostgreSQL + gerçek backup/restore kurulumudur. Bu tamamlanmadan `ticari production güvenli` etiketi verilmez.
