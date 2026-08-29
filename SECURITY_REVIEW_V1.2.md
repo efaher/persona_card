@@ -14,6 +14,7 @@ Bu belge 2026-08-29 tarihli V1.2 staging pilotu sonrasında production öncesi k
 - frontend `Referrer-Policy: no-referrer`, `X-Frame-Options: DENY`, `X-Content-Type-Options: nosniff` ve temel Permissions Policy ile yayınlanıyor
 - `runtime-config.js` production backend değişikliklerinde stale cache riskini azaltmak için `no-store`
 - auth/admin endpointleri bağımlılıksız rate-limit middleware ile korunuyor; limit aşımı `429 RATE_LIMITED` + `Retry-After` döndürüyor
+- Render üzerinde gerçek istemci IP'si için Cloudflare tarafından yazılan `CF-Connecting-IP` öncelikli kullanılıyor; `X-Forwarded-For` yalnız fallback
 - login/register için IP tabanlı ortak limit; login için e-posta içeren ayrı limit; admin lisans endpointi için ayrı limit bulunuyor
 - danışan davet secret'ı query parametresinden URL fragment'a taşındı
 - fragment içindeki token sayfa açılışında `sessionStorage`'a alınıp adres çubuğundan hemen temizleniyor; aynı sekmede reconnect destekleniyor
