@@ -24,7 +24,20 @@ jobs:
         run: node --check scripts/write-runtime-config.js
       - name: Generate staging runtime config
         env:
+          CONTEXT: deploy-preview
           PERSONA_CARD_BACKEND_URL: https://persona-card-v12-staging-efaher.onrender.com
+        run: node scripts/write-runtime-config.js && node --check runtime-config.js
+      - name: Reject legacy backend in production
+        run: |
+          if CONTEXT=production PERSONA_CARD_BACKEND_URL=https://terapikart.onrender.com node scripts/write-runtime-config.js; then
+            echo "Production guard eski backend'i reddetmeliydi."
+            exit 1
+          fi
+          echo "Production legacy-backend guard ok"
+      - name: Accept explicit HTTPS V1.2 backend in production
+        env:
+          CONTEXT: production
+          PERSONA_CARD_BACKEND_URL: https://persona-card-production.example.com
         run: node scripts/write-runtime-config.js && node --check runtime-config.js
       - name: Check service worker JavaScript
         run: node --check service-worker.js
